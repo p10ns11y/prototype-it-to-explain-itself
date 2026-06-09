@@ -30,6 +30,88 @@ flowchart LR
 
 The model never plans the whole reply at once. At every step it only chooses what comes next.
 
+## Code Structure & Big-Picture Flow
+
+The entire prototype lives in one file, deliberately. The numbered sections below map directly to the code.
+
+```mermaid
+flowchart TD
+    subgraph SRC["simple_llm_prototype.py — 7 Sections"]
+        direction TB
+        C1["1. CORPUS<br/>STORY repeated 15×"]
+        C2["2. TOKENIZER<br/>char ↔ id + encode/decode"]
+        C3["3. DATASET<br/>CharDataset — sliding windows"]
+        C4["4. MODEL<br/>TinyLLM — Embed + LSTM + Head"]
+        C5["5. TRAIN<br/>train_model — next-char loss"]
+        C6["6. GENERATE<br/>generate_text + show_top_predictions"]
+        C7["7. main<br/>CLI + full pipeline orchestration"]
+    end
+
+    C1 --> C2
+    C2 --> C3
+    C3 --> C5
+    C4 --> C5 & C6
+    C7 -->|orchestrates| C3 & C4 & C5 & C6
+```
+
+### Runtime Execution Flow (what happens when you run the script)
+
+```mermaid
+flowchart TD
+    Start["python llm/simple_llm_prototype.py<br/>--prompt ... --tokens ..."] --> D1["Encode CORPUS → token tensor"]
+    D1 --> D2["CharDataset + DataLoader<br/>creates (context_window, next_char) pairs"]
+    D2 --> M["Instantiate TinyLLM<br/>~150k parameters"]
+    M --> T["train_model<br/>25 epochs, AdamW, loss only on last position"]
+    T --> G["generate_text<br/>autoregressive loop: predict → sample → append → repeat"]
+    G --> Opt{"--show-probs ?"}
+    Opt -->|yes| P["show_top_predictions<br/>prints the model's actual probability distribution"]
+    Opt -->|no| Out["Print generated text + educational summary"]
+    P --> Out
+```
+
+### Model Architecture (with shapes)
+
+```mermaid
+flowchart LR
+    subgraph TinyLLM
+        direction TB
+        In["input_ids<br/>(B, T)"] --> Emb["Embedding<br/>(B, T, 64)"]
+        Emb --> Lstm["2-layer LSTM<br/>(B, T, 128)"]
+        Lstm --> Head["Linear head<br/>(B, T, vocab_size)"]
+        Head --> Logits["logits<br/>(B, T, V)"]
+    end
+
+    Logits --> Train["Training: use only [:, -1, :]<br/>CrossEntropy with true next char"]
+    Logits --> Gen["Generation: softmax last position<br/>sample 1 token, append, repeat"]
+
+    style In fill:#e3f2fd
+    style Logits fill:#fff3e0
+```
+
+### Training vs Generation (the same model, two very different loops)
+
+```mermaid
+flowchart LR
+    subgraph Train["TRAINING (batched, offline)"]
+        direction TB
+        TW["Many fixed windows<br/>(30 chars)"] --> TF["Forward pass<br/>(teacher forced)"]
+        TF --> TL["Loss only on position -1<br/>(predict the 31st char)"]
+        TL --> TBK["Backprop + AdamW step"]
+    end
+
+    subgraph Gen["GENERATION (online, one token at a time)"]
+        direction TB
+        GS["Current context + hidden state"] --> GF["Forward pass (small window)"]
+        GF --> GSamp["Softmax + temperature<br/>sample ONE token"]
+        GSamp --> GApp["Append sampled token<br/>to context + hidden"]
+        GApp -->|repeat N times| GS
+    end
+
+    Train ~~~ Gen
+```
+
+These diagrams show the *structure of the code* and how data moves, not just the abstract idea. The source is intentionally small so you can hold the whole picture in your head while reading any one section.
+
 ## Training Teaches the Guesses
 
 We turn the story into many short examples by sliding a window across it.

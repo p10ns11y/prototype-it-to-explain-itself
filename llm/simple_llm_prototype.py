@@ -80,6 +80,14 @@ print(f"Characters: {''.join(chars)}\n")
 # This teaches the model: "when you see THIS pattern, the next char is usually THAT".
 
 class CharDataset(Dataset):
+    """
+    Turns the flat token stream into supervised examples:
+        input  = 30 consecutive characters
+        target = the single character that immediately follows
+
+    This is the minimal form of the "predict the next token" task.
+    Sliding the window creates thousands of overlapping examples from one small story.
+    """
     def __init__(self, data: torch.Tensor, seq_len: int = 30):
         self.data = data
         self.seq_len = seq_len
@@ -88,9 +96,9 @@ class CharDataset(Dataset):
         return len(self.data) - self.seq_len - 1
 
     def __getitem__(self, idx):
-        # Input: 30 characters
+        # Input window of context
         x = self.data[idx : idx + self.seq_len]
-        # Target: the single character that comes immediately after
+        # The character the model must predict (the one right after the window)
         y = self.data[idx + self.seq_len]
         return x, y
 
@@ -130,10 +138,14 @@ class TinyLLM(nn.Module):
         """
         x shape: (batch_size, seq_len)
         Returns: logits (batch_size, seq_len, vocab_size), hidden state
+
+        Note: We produce logits for every position in the sequence.
+        During training we only use the *last* position's logits (see train_model).
+        The full sequence of logits is useful for other training regimes (e.g. full next-token loss).
         """
         emb = self.embed(x)                    # (B, T, embed_dim)
-        out, hidden = self.lstm(emb, hidden)   # (B, T, hidden_dim)
-        logits = self.head(out)                # (B, T, vocab_size)
+        out, hidden = self.lstm(emb, hidden)   # (B, T, hidden_dim)  -- LSTM updates its memory
+        logits = self.head(out)                # (B, T, vocab_size) -- one score per vocab item, per time step
         return logits, hidden
 
     def init_hidden(self, batch_size: int, device: str):
@@ -161,8 +173,10 @@ def train_model(model: TinyLLM, dataloader: DataLoader, epochs: int = 25, lr: fl
             
             optimizer.zero_grad()
             
-            logits, _ = model(batch_x)           # (B, T, V)
-            # We only care about predicting the token RIGHT AFTER the input sequence
+            logits, _ = model(batch_x)           # (B, T, V) -- predictions for every position
+            # We only care about predicting the token RIGHT AFTER the input sequence.
+            # That's why we slice to [:, -1, :]. The target (batch_y) is exactly that next char.
+            # This is the classic "next-token prediction" objective in its simplest form.
             last_step_logits = logits[:, -1, :]  # (B, V)
             
             loss = criterion(last_step_logits, batch_y)
@@ -185,13 +199,16 @@ def train_model(model: TinyLLM, dataloader: DataLoader, epochs: int = 25, lr: fl
 def generate_text(model: TinyLLM, seed_text: str, max_new_tokens: int = 150, 
                   temperature: float = 0.8, device: str = 'cpu') -> str:
     """
-    The heart of how every modern LLM generates text:
-    1. Encode current context
-    2. Predict probability distribution over next token
-    3. Sample one token from that distribution
-    4. Append it to context
-    5. Repeat until desired length
-    
+    The heart of how every modern LLM generates text (autoregressive decoding):
+
+    1. Start with a prompt (encoded to token IDs)
+    2. Predict probability distribution over the entire vocabulary for the *next* token
+    3. Sample one token from that distribution (using temperature to sharpen or flatten)
+    4. Append the sampled token to the context
+    5. Repeat, feeding the growing sequence back in (the LSTM hidden state helps carry memory)
+
+    This single loop, run at massive scale with better architectures and data, is what produces fluent text.
+
     Temperature controls randomness:
         < 0.5  -> more deterministic / repetitive
         ~ 0.7-0.9 -> balanced creativity
@@ -209,23 +226,25 @@ def generate_text(model: TinyLLM, seed_text: str, max_new_tokens: int = 150,
     
     with torch.no_grad():
         for _ in range(max_new_tokens):
-            # Feed recent context (prevents very long sequences)
+            # Feed recent context (prevents very long sequences).
+            # The LSTM hidden state already carries long-term memory, so a small window is enough.
             input_seq = context[:, -seq_window:] if context.size(1) > seq_window else context
             
-            logits, hidden = model(input_seq, hidden)
+            logits, hidden = model(input_seq, hidden)   # hidden carries state across generation steps
             
-            # Get logits for the very next position
+            # Get logits for the very next position only (the one we will sample)
             next_logits = logits[0, -1, :] / max(temperature, 1e-6)
             
-            # Convert to probabilities
+            # Convert raw scores into a probability distribution over the entire vocabulary
             probs = torch.softmax(next_logits, dim=-1)
             
-            # Sample from the distribution (this is where "creativity" comes from)
+            # Sample from the distribution (this is where "creativity" / stochasticity comes from).
+            # torch.multinomial does the actual sampling according to the probabilities.
             next_id = torch.multinomial(probs, num_samples=1).item()
             
             generated_ids.append(next_id)
             
-            # Append to growing context
+            # Append the chosen token to the running context so the next prediction sees it
             context = torch.cat([context, torch.tensor([[next_id]], device=device)], dim=1)
     
     return decode(generated_ids)
@@ -281,24 +300,29 @@ Examples (from project root):
     print(f"Device: {device}  |  PyTorch: {torch.__version__}\n")
     
     # --- Data Preparation ---
+    # Turn the repeated story into a flat stream of integer token IDs
     data_tensor = encode(CORPUS)
     print(f"Corpus size: {len(CORPUS):,} characters  →  {len(data_tensor):,} tokens")
     
+    # Create sliding-window supervised examples: (30 chars) -> predict the 31st
     seq_len = 30
     dataset = CharDataset(data_tensor, seq_len=seq_len)
     dataloader = DataLoader(dataset, batch_size=48, shuffle=True, drop_last=True)
     print(f"Training examples created: {len(dataset):,}\n")
     
     # --- Model ---
+    # Tiny 2-layer LSTM language model (~150k params)
     model = TinyLLM(vocab_size, embed_dim=64, hidden_dim=128, num_layers=2)
     total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
     print(f"Model created with {total_params:,} trainable parameters")
     print("   (Real LLMs have 1B - 1T+ parameters)\n")
     
     # --- Train ---
+    # The model learns to predict the next character after every 30-char window
     model = train_model(model, dataloader, epochs=args.epochs, lr=0.0035, device=device)
     
     # --- Generate ---
+    # Run the autoregressive loop: predict one char, append, repeat
     print("=" * 65)
     print("GENERATION DEMO")
     print("=" * 65)
@@ -313,6 +337,7 @@ Examples (from project root):
     print("-" * 65)
     
     if args.show_probs:
+        # Optional: show the actual probability distribution the model assigns right after the prompt
         show_top_predictions(model, seed, top_k=7, temperature=1.0, device=device)
     
     # --- Educational note ---
