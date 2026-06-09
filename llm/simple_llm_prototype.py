@@ -26,10 +26,10 @@ But the fundamental loop is IDENTICAL: predict next token, append, repeat.
 Run this script to train a tiny model on a story, then generate new text!
 You can modify the CORPUS, hyperparameters, or prompt to experiment.
 
-Usage examples:
-    python simple_llm_prototype.py
-    python simple_llm_prototype.py --prompt "Elara dreamed of" --tokens 200 --temp 0.6
-    python simple_llm_prototype.py --show-probs
+Usage examples (run from project root):
+    python llm/simple_llm_prototype.py
+    python llm/simple_llm_prototype.py --prompt "Elara dreamed of" --tokens 200 --temp 0.6
+    python llm/simple_llm_prototype.py --show-probs
 """
 
 import torch
@@ -259,10 +259,10 @@ def main():
         description="Interactive Tiny LLM Prototype - Understand how LLMs really work",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  python simple_llm_prototype.py
-  python simple_llm_prototype.py --prompt "Elara and the machine" --tokens 180 --temp 0.65
-  python simple_llm_prototype.py --show-probs --prompt "She dreamed of building"
+Examples (from project root):
+  python llm/simple_llm_prototype.py
+  python llm/simple_llm_prototype.py --prompt "Elara and the machine" --tokens 180 --temp 0.65
+  python llm/simple_llm_prototype.py --show-probs --prompt "She dreamed of building"
         """
     )
     parser.add_argument("--prompt", type=str, default="In a quiet village", 

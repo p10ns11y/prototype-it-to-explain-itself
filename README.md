@@ -1,95 +1,72 @@
 # Prototype It To Explain Itself
 
-> A tiny, runnable prototype that explains how large language models work — by implementing one from scratch.
+We build the smallest working version of an idea so the code itself teaches the idea.
 
-This project contains a complete, self-contained educational implementation of a character-level LSTM language model in pure PyTorch. The goal is **not** to build production AI, but to make the fundamental mechanisms of LLMs transparent and understandable.
+Some mechanisms stay cloudy after papers, videos, or lectures. A complete, tiny, runnable prototype makes the key loop visible. You run it. You read the source. You change a number. You see what shifts. Understanding follows from contact.
 
-## What This Is
+## The Pattern
 
-Modern LLMs (Grok, GPT, Claude, Llama, etc.) are fundamentally **next-token predictors**. Given a sequence of tokens, they predict the most likely next token. Everything else — reasoning, conversation, code generation — emerges from scaling this simple loop with clever architecture and massive data.
-
-This prototype demonstrates the full pipeline in ~340 lines:
-
-1. **Tokenization** — Character-level (the simplest possible approach)
-2. **Embedding** — Mapping tokens to learned dense vectors
-3. **Recurrent memory** — LSTM maintains hidden state across time
-4. **Prediction head** — Projects to a probability distribution over the vocabulary
-5. **Autoregressive generation** — Sample a token, append it, repeat
-
-### Key Differences from Real LLMs
-
-| Aspect              | This Prototype          | Real LLMs                     |
-|---------------------|-------------------------|-------------------------------|
-| Tokenization        | Character-level (~50)   | Subword BPE (~30k–100k+)      |
-| Architecture        | 2-layer LSTM            | Stacked Transformer decoders  |
-| Attention           | None (recurrent only)   | Multi-head self-attention     |
-| Parameters          | ~150k                     | 1B – 1T+                      |
-| Training data       | One short story ×15     | Internet-scale corpora        |
-| Goal                | Understanding           | Capability                    |
-
-The **core loop is identical**: predict next token → append → repeat.
-
-## Quick Start
-
-### Requirements
-
-- Python 3.9+
-- PyTorch (CPU is fine; CUDA works if available)
-
-```bash
-pip install torch
+```mermaid
+flowchart TD
+    Q[Curiosity about<br/>a hidden mechanism] --> Build[Build the smallest complete version<br/>that still shows the essential loop]
+    Build --> Tiny["Use tiny data you can<br/>hold in your head"]
+    Build --> Inspect["Add direct ways to<br/>inspect the inside"]
+    Build --> Small["Keep total size small enough<br/>to finish in one pass"]
+    Tiny & Inspect & Small --> Cycle["Run → Read → Modify → Observe"]
+    Cycle --> Insight[Insight]
+    Insight -->|new question| Q
 ```
 
-### Run It
+The loop repeats for each new prototype.
 
-```bash
-python simple_llm_prototype.py
-```
+We write both the code and the docs the same way:
 
-### Command Line Options
+- Short words first.
+- Active voice.
+- One clear thought per sentence.
+- Cut any word that does not do real work.
 
-```bash
-python simple_llm_prototype.py \
-  --prompt "Elara dreamed of" \
-  --tokens 200 \
-  --temp 0.6
+This matches the spirit of clear English that Orwell set out.
 
-python simple_llm_prototype.py --show-probs
-```
+## Current Prototypes
 
-| Flag           | Default                  | Description |
-|----------------|--------------------------|-----------|
-| `--prompt`     | `"In a quiet village"`   | Seed text for generation |
-| `--tokens`     | `140`                    | Number of new characters to generate |
-| `--temp`       | `0.75`                   | Sampling temperature (lower = more deterministic) |
-| `--show-probs` | (off)                    | After generation, show the model's top predictions for the next character |
-| `--epochs`     | `25`                     | Training epochs |
+- **[LLM fundamentals](llm/README.md)** — A character-level LSTM that trains on one short story and then generates new text in that style. The full next-token prediction loop fits in a few hundred lines of PyTorch. You can watch probabilities, tweak temperature, and swap the corpus.
 
-## How It Works (High Level)
+More prototypes will live in their own folders under this root. Each one will target one mechanism that is easy to use but hard to see.
 
-1. **Data**: A short original story about an inventor named Elara is repeated to create a tiny training corpus.
-2. **Training**: The model sees many short windows of text and learns to predict the character that immediately follows each window.
-3. **Generation**: Start with your prompt. At each step the model outputs a probability distribution over possible next characters. We sample from it (temperature controls how "adventurous" the sampling is) and feed the result back in.
-4. **Inspection**: Use `--show-probs` to peek at what the model currently believes are the most likely next characters given a context. This is the closest thing to "seeing inside the mind" of the model.
+## Why Small Prototypes Beat Description Alone
 
-## Experiments to Try
+- The data is small. You can see every pattern the model picks up.
+- The model is small. You can trace a forward pass by hand if you want.
+- The loop is complete. Tokenize → embed → process → predict → sample → append.
+- Change one lever and the output changes in ways you can feel.
 
-- Change the `STORY` constant and retrain — watch the model learn a completely different style and vocabulary.
-- Increase `--epochs` or model size (`hidden_dim`, `num_layers` in `TinyLLM`).
-- Compare temperatures: `0.3` (safe/repetitive) vs `1.2` (wild/chaotic).
-- Use `--show-probs` with different prompts to see how context changes the probability distribution.
-- Add more layers or replace the LSTM with a small Transformer block (advanced follow-up).
+The gap between the toy and real systems becomes concrete instead of magical.
 
-## Philosophy
+## How to Use This Repository
 
-This project exists to **prototype it to explain itself**. By building the simplest possible version that still captures the essential mechanism, the code becomes its own best documentation. Read the source, run it, tweak it, break it — understanding follows.
+1. Choose a prototype folder.
+2. Read its README for the narrow goal and the diagram.
+3. Run the main script with the examples given.
+4. Open the source file and follow the data as it moves.
+5. Edit one constant, hyperparameter, or piece of the story. Run again.
 
-The same fundamental next-token prediction loop, just scaled up dramatically with better architecture and data, is what powers today's frontier models.
+Do this a few times and the abstract claim turns into a felt fact.
+
+## Future Direction
+
+We will add one prototype at a time. Each new folder will contain:
+
+- The runnable code (as small as the concept allows)
+- A focused README with a visual diagram of the core flow
+- Clear notes on what was left out and why
+
+The root README will stay short. It links the separate prototypes and restates the shared intent.
 
 ## License
 
-This is research / educational code. Use it to learn, teach, and experiment.
+This is research and education code. Use it to learn, to teach, and to build the next small explainer.
 
 ---
 
-*Run it. Read it. Modify it. Understand it.*
+Build the smallest thing that still carries the heart of the idea. Then let the prototype do the explaining.
