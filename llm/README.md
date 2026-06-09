@@ -136,7 +136,7 @@ We repeat one short story 15 times. The model overfits on purpose. It learns the
 3. **Dataset** — Sliding windows that create (context, next-char) pairs.
 4. **Model** — Embedding → 2-layer LSTM → Linear prediction head.
 5. **Training** — AdamW optimizer. Loss only on the single next character.
-6. **Generation** — The autoregressive loop with temperature control.
+6. **Generation** — The autoregressive loop with temperature + (future) top-p / top-k sampling control. See [sampling-strategies.md](sampling-strategies.md).
 7. **Inspection** — `--show-probs` shows the model's top guesses for the next character.
 
 The script runs all of these steps in order when you execute it.
@@ -176,6 +176,8 @@ The central act stays identical: predict, append, repeat.
 - Set `--temp 0.3` (safe) vs `--temp 1.3` (wild).
 - Use `--show-probs` and watch how the ending context shifts the probabilities.
 - Increase `hidden_dim` or `num_layers` in the model and measure the effect.
+
+For a deeper look at **why temperature alone is not enough** and how production systems (including Grok) actually control generation, read [sampling-strategies.md](sampling-strategies.md). It covers Top-k and Top-p (nucleus) sampling with examples that map directly to the code in `generate_text`.
 
 ## This Prototype Fits a Larger Pattern
 
