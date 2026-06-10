@@ -157,47 +157,80 @@ def validate_transition(prev: Optional[Step], new: Step) -> Optional[str]:
     return None
 
 
+def _split_raw_entry(entry: str) -> List[str]:
+    """
+    Split a (possibly mangled) trajectory entry that may contain multiple
+    Thought:/Action:/etc sections into separate clean lines.
+    This handles cases where the model (or the cleaning in run_react) put
+    several steps into one string.
+    """
+    import re
+    if not entry:
+        return []
+    # Normalize newlines
+    text = entry.replace('\r\n', '\n').replace('\r', '\n').strip()
+    # Split on the known markers (case-insensitive), keeping the marker with the following text
+    # Use lookahead so each part starts with its marker
+    parts = re.split(r'(?i)(?=Thought:|Action:|Observation:|Final Answer:|Final:)', text)
+    cleaned = []
+    for p in parts:
+        p = p.strip()
+        if p:
+            cleaned.append(p)
+    return cleaned
+
+
 def to_typed_trajectory(goal: str, raw_trajectory: List[str]) -> TypedTrajectory:
     """
     Take the free-form strings produced by the untyped run_react and turn
     them into a strictly typed, validated trajectory.
-    Illegal or unparsable lines become ErrorSteps.
+    This version is robust against "compound" entries where one string
+    contains both a mangled Thought and an Action (common with the demo stubs
+    and the clean_thought logic in run_react).
     """
     typed_steps: List[Step] = []
     prev: Optional[Step] = None
 
-    for line in raw_trajectory:
-        line = line.strip()
-        if not line:
-            continue
+    for raw in raw_trajectory:
+        for line in _split_raw_entry(raw):
+            line = line.strip()
+            if not line:
+                continue
 
-        new_step: Optional[Step] = None
+            new_step: Optional[Step] = None
+            lower = line.lower()
 
-        if line.lower().startswith("thought:"):
-            new_step = Thought(line.split(":", 1)[1].strip())
-        elif line.lower().startswith("action:"):
-            # parse "Action: calc[3+4]"
-            try:
+            if lower.startswith("thought:"):
                 content = line.split(":", 1)[1].strip()
-                tool, arg = content.split("[", 1)
-                arg = arg.rstrip("]")
-                new_step = Action(tool.strip().lower(), arg.strip())
-            except Exception:
-                new_step = ErrorStep(f"Bad Action line: {line}")
-        elif line.lower().startswith("observation:"):
-            new_step = Observation(line.split(":", 1)[1].strip())
-        elif line.lower().startswith("final answer:"):
-            new_step = FinalAnswer(line.split(":", 1)[1].strip())
-        else:
-            new_step = ErrorStep(f"Unrecognized step: {line}")
-
-        if new_step:
-            err = validate_transition(prev, new_step)
-            if err:
-                typed_steps.append(ErrorStep(f"{err} (got {new_step})"))
+                new_step = Thought(content)
+            elif lower.startswith("action:"):
+                try:
+                    content = line.split(":", 1)[1].strip()
+                    if "[" in content and "]" in content:
+                        tool_part, arg_part = content.split("[", 1)
+                        tool = tool_part.strip().lower()
+                        arg = arg_part.split("]")[0].strip()
+                        new_step = Action(tool, arg)
+                    else:
+                        new_step = ErrorStep(f"Bad Action format: {line}")
+                except Exception:
+                    new_step = ErrorStep(f"Bad Action line: {line}")
+            elif lower.startswith("observation:"):
+                content = line.split(":", 1)[1].strip()
+                new_step = Observation(content)
+            elif lower.startswith("final answer:") or lower.startswith("final:"):
+                content = line.split(":", 1)[1].strip()
+                new_step = FinalAnswer(content)
             else:
-                typed_steps.append(new_step)
-            prev = new_step
+                new_step = ErrorStep(f"Unrecognized step: {line[:60]}")
+
+            if new_step:
+                err = validate_transition(prev, new_step)
+                if err:
+                    typed_steps.append(ErrorStep(f"{err} (got {new_step})"))
+                else:
+                    typed_steps.append(new_step)
+                prev = new_step
 
     return TypedTrajectory(steps=typed_steps, goal=goal)
 
@@ -249,6 +282,13 @@ def main():
     print(f"\nComplete? {typed.is_complete()}")
     if typed.last_final():
         print(f"Final answer: {typed.last_final()}")
+    else:
+        # For the demo, if we ended on an Observation (common with forcing + stub),
+        # show what the last computed value was.
+        for s in reversed(typed.steps):
+            if isinstance(s, Observation):
+                print(f"Last observation (tool result): {s.result}")
+                break
 
     # ------------------------------------------------------------------
     # WHAT YOU JUST SAW

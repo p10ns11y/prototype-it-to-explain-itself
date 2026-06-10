@@ -32,8 +32,9 @@ Because the original model only ever saw repeated story text, it is bad
 at structured output. Synthetic agent data is the natural cure.
 
 Run:
-    python llm/synthetic_data_factory.py --episodes 12 --filter
-    python llm/synthetic_data_factory.py --episodes 20 --train --epochs 5
+    python llm/synthetic_data_factory.py --episodes 15 --filter
+    python llm/synthetic_data_factory.py --episodes 20 --train --epochs 5 --min-score 2.0
+    python llm/synthetic_data_factory.py --backend tiny-lstm --episodes 12 --train --no-filter
 
 The output dataset + (optionally) an improved model checkpoint demonstrate
 the self-improvement loop that powers Proto 7+.
@@ -53,14 +54,23 @@ _llm_dir = Path(__file__).resolve().parent
 if str(_llm_dir) not in sys.path:
     sys.path.insert(0, str(_llm_dir))
 
-from mini_react import run_react, TOOLS
+from mini_react import (
+    run_react,
+    TOOLS,
+    build_trained_model,
+    save_model,
+    load_model,
+)
 from tiny_predictor import from_tiny_llm, Predictor
 from trajectory_evaluator import EVAL_TASKS, run_and_score  # reuse the tasks + scorer
 
-# We also need the training pieces for the optional "improve" step
+# Training pieces that genuinely live in simple_llm_prototype
 from simple_llm_prototype import (
-    build_trained_model, save_model, load_model, train_model,
-    CharDataset, DataLoader, STORY as ORIGINAL_STORY
+    train_model,
+    CharDataset,
+    DataLoader,
+    encode,
+    STORY as ORIGINAL_STORY,
 )
 
 
@@ -79,11 +89,18 @@ def generate_trajectories(predictor: Predictor, n: int = 12,
 
 def self_critique_and_filter(records: List[Dict[str, Any]],
                              predictor: Predictor,
-                             min_score: float = 3.5) -> List[Dict[str, Any]]:
+                             min_score: float = 2.0) -> List[Dict[str, Any]]:
     """
-    For each trajectory, ask the (same) predictor to critique it.
-    Keep only those that the critic thinks are high quality.
-    This is the cheap "preference / quality filter" step.
+    For each trajectory, ask the predictor to critique it.
+    Keep only those that the critic thinks are reasonably high quality.
+
+    Because the tiny model is weak at following exact output formats,
+    we are lenient:
+    - We primarily trust `outcome_success` (the trajectory reached a Final Answer
+      that matched basic expectations).
+    - If the critic gives a parsable score >= min_score, we keep it.
+    - If we can't parse the critic well but outcome_success is True, we keep it
+      (with a default score).
     """
     kept = []
     for rec in records:
@@ -92,35 +109,46 @@ def self_critique_and_filter(records: List[Dict[str, Any]],
 
         traj_text = "\n".join(rec["trajectory"][-8:])
         critique_prompt = (
-            "You are a strict critic of tiny agents.\n"
+            "You are judging a tiny ReAct agent.\n"
             f"Goal: {rec['goal']}\n\n"
             f"Trajectory:\n{traj_text}\n\n"
             f"Final answer: {rec.get('answer', '')}\n\n"
-            "Is this a high-quality, correctly formatted, helpful run that "
-            "reached a reasonable conclusion using tools properly when needed?\n"
-            "Reply with exactly:\n"
-            "SCORE: 4/5\n"
+            "Rate quality from 1 to 5 (5 = excellent format + useful for the goal).\n"
+            "Reply with exactly this format:\n"
+            "SCORE: 3.5/5\n"
             "KEEP: yes\n"
-            "REASON: one short sentence.\n"
+            "REASON: short note\n"
         )
+        parsed_score = None
+        parsed_keep = False
         try:
-            raw = predictor(critique_prompt, max_new_tokens=30)
-            score = 0.0
-            keep = False
+            raw = predictor(critique_prompt, max_new_tokens=25)
             for line in raw.splitlines():
-                if "SCORE" in line.upper():
+                line_u = line.upper()
+                if "SCORE" in line_u:
                     import re
                     m = re.search(r"([0-5](?:\.[0-9])?)", line)
                     if m:
-                        score = float(m.group(1))
-                if "KEEP" in line.upper() and "yes" in line.lower():
-                    keep = True
-            rec["critic_score"] = score
-            rec["critic_keep"] = keep
-            if keep and score >= min_score:
-                kept.append(rec)
+                        parsed_score = float(m.group(1))
+                if "KEEP" in line_u and "yes" in line.lower():
+                    parsed_keep = True
         except Exception:
             pass
+
+        rec["critic_score"] = parsed_score
+        rec["critic_keep"] = parsed_keep
+
+        outcome_ok = rec.get("outcome_success", False)
+
+        # Keep if:
+        # - critic explicitly says keep and score is decent, OR
+        # - we have a parsed score >= min_score, OR
+        # - the basic outcome was successful (reached a plausible final answer)
+        if (parsed_keep and (parsed_score or 0) >= min_score) or \
+           (parsed_score is not None and parsed_score >= min_score) or \
+           outcome_ok:
+            kept.append(rec)
+
     return kept
 
 
@@ -157,20 +185,23 @@ def build_synthetic_corpus(good_records: List[Dict[str, Any]]) -> str:
 def improve_model(original_model, good_records: List[Dict[str, Any]],
                   epochs: int = 5, device: str = "cpu"):
     """
-    Mix the original STORY with synthetic ReAct traces and train a bit more.
+    Mix the original STORY with synthetic ReAct traces and train (or continue training).
     This is the "fine-tune on your own agent's successful outputs" step.
     """
     synthetic = build_synthetic_corpus(good_records)
     mixed = (ORIGINAL_STORY + "\n\n" + synthetic) * 3   # repeat for more weight on new style
 
-    # Reuse the exact training machinery
-    from simple_llm_prototype import encode, CharDataset, DataLoader, train_model
-
+    # Reuse the exact training machinery (already imported at top)
     data = [encode(mixed)]
     dataset = CharDataset(data, seq_len=30)
     loader = DataLoader(dataset, batch_size=32, shuffle=True)
 
-    # Continue training the existing model weights
+    if original_model is None:
+        # Should not happen anymore thanks to the caller, but be safe
+        print("Creating fresh model architecture for training on synthetic data...")
+        original_model = build_trained_model(epochs=0, device=device)
+
+    # Continue (or start) training the model weights on the mixed corpus
     trained = train_model(original_model, loader, epochs=epochs, device=device)
     return trained
 
@@ -182,6 +213,8 @@ def main():
     parser.add_argument("--filter", action="store_true", default=True,
                         help="Run self-critique filter (recommended)")
     parser.add_argument("--no-filter", dest="filter", action="store_false")
+    parser.add_argument("--min-score", type=float, default=2.0,
+                        help="Minimum critic score (1-5) to consider a trajectory good")
     parser.add_argument("--train", action="store_true",
                         help="After filtering, actually improve a model checkpoint")
     parser.add_argument("--epochs", type=int, default=4,
@@ -189,6 +222,9 @@ def main():
     parser.add_argument("--model-path", type=str, default="llm/tiny_model.pt")
     parser.add_argument("--out-dataset", type=str, default="llm/synthetic_react.txt",
                         help="Where to write the filtered high-quality trajectories")
+    parser.add_argument("--backend", default="stub-smart",
+                        choices=["tiny-lstm", "stub-fast", "stub-smart"],
+                        help="Backend to use for generating trajectories and critiques")
     args = parser.parse_args()
 
     print("=" * 70)
@@ -198,20 +234,25 @@ def main():
     print("All on top of the existing Predictor + ReAct + Evaluator stack.")
     print()
 
-    # Use a reasonably good backend for data generation
-    # (you can also generate with "stub-smart" and improve the real tiny model)
     from local_inference_playground import BACKENDS
-    predictor = BACKENDS["stub-smart"]()   # or switch to tiny-lstm
+    predictor = BACKENDS[args.backend]()
 
+    print(f"Using backend: {args.backend}")
     print(f"Generating {args.episodes} trajectories...")
     records = generate_trajectories(predictor, n=args.episodes)
 
+    num_outcome_success = sum(1 for r in records if r.get("outcome_success", False))
+    print(f"  {num_outcome_success} reached a plausible Final Answer (outcome_success=True)")
+
     if args.filter:
-        print("Running self-critique filter...")
-        good = self_critique_and_filter(records, predictor)
+        print(f"Running self-critique filter (min-score={args.min_score})...")
+        good = self_critique_and_filter(records, predictor, min_score=args.min_score)
     else:
-        # fallback: keep anything that at least reached a Final Answer
-        good = [r for r in records if any("Final Answer" in t for t in r.get("trajectory", []))]
+        good = [r for r in records if r.get("outcome_success", False)]
+
+    if len(good) == 0 and args.filter:
+        print("Critic kept 0 trajectories. Falling back to those with outcome_success=True.")
+        good = [r for r in records if r.get("outcome_success", False)]
 
     print(f"Kept {len(good)} high-quality trajectories out of {len(records)}")
 
@@ -232,10 +273,10 @@ def main():
     if args.train and good:
         print("\nImproving model on synthetic + original data...")
         if os.path.exists(args.model_path):
-            from simple_llm_prototype import load_model
             base_model = load_model(args.model_path)
         else:
-            base_model = None  # will be created inside improve_model
+            print("No existing model — creating a fresh TinyLLM and training from scratch on mixed data.")
+            base_model = build_trained_model(epochs=0, device="cpu")  # fresh architecture, no training yet
 
         improved = improve_model(base_model, good, epochs=args.epochs)
         out_path = args.model_path.replace(".pt", "_synthetic.pt")
@@ -264,19 +305,25 @@ def main():
    - Improve the tiny teaching model
    - Then use the improved tiny model inside the same playground / evaluator
 
-4. This is the beginning of the real flywheel:
+4. With very weak models (our tiny LSTM), the self-critique step often keeps
+   very few or zero trajectories because the model rarely produces perfectly
+   formatted ReAct traces that the critic likes. Use `--min-score 2.0` (or lower),
+   `--no-filter`, or rely on the `outcome_success` fallback.
+
+5. This is the beginning of the real flywheel:
    Evaluator (Proto 4) → filter good traces → Synthetic Data (this) →
    better model → plug back into Playground (Proto 5) → repeat.
 
-5. In production this becomes RLHF / DPO / iterative fine-tuning on agent
+6. In production this becomes RLHF / DPO / iterative fine-tuning on agent
    trajectories. Here it is the smallest possible visible version.
 
 Try these experiments:
 - Run with --no-filter and compare how noisy the dataset becomes.
 - Generate with stub-smart, then --train, then run the trajectory_evaluator
   on the new _synthetic.pt model and watch the success rate / judge scores move.
+- Use --backend tiny-lstm --min-score 1.5 to generate data directly from the
+  model you're trying to improve.
 - Add preference pairs (chosen vs rejected trajectory for the same goal).
-- Curriculum: start with easy goals from the evaluator, then harder ones.
 
 Proto 6 turns measurement (Proto 4) into improvement. The next prototypes
 (typed workflows, human oversight, multi-agent) become much more powerful

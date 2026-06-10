@@ -56,7 +56,13 @@ _llm_dir = Path(__file__).resolve().parent
 if str(_llm_dir) not in sys.path:
     sys.path.insert(0, str(_llm_dir))
 
-from mini_react import TOOLS, run_react
+from mini_react import (
+    TOOLS,
+    run_react,
+    build_trained_model,
+    load_model,
+    save_model,
+)
 from tiny_predictor import from_tiny_llm, Predictor
 
 # ------------------------------------------------------------------
@@ -69,11 +75,9 @@ def make_tiny_lstm_predictor(model_path: str = "llm/tiny_model.pt",
     """The real one. Requires the trained tiny model."""
     if not os.path.exists(model_path):
         print(f"[playground] No model at {model_path}, training a quick one...")
-        from simple_llm_prototype import build_trained_model, save_model
         model = build_trained_model(epochs=8, device=device)
         save_model(model, model_path)
     else:
-        from simple_llm_prototype import load_model
         model = load_model(model_path, device=device)
 
     return from_tiny_llm(model, temperature=temperature, device=device)
@@ -94,10 +98,32 @@ def make_stub_predictor(name: str, latency_ms: float = 80.0,
 
         # Very crude simulation of "model behavior"
         if quality == "smart":
-            if "Action:" in prompt or "calc[" in prompt.lower():
-                return "Thought: I need to calculate that.\nAction: calc[3 * 4 + 2]\n"
+            recent = prompt[-400:].lower()  # look at the tail of the prompt (recent history)
+
+            # Prefer the expression that was in the original goal/question if present
+            import re
+            calc_match = re.search(r'calc\[([^\]]+)\]', prompt, re.IGNORECASE)
+            expr = calc_match.group(1).strip() if calc_match else "3 * 4 + 2"
+
+            if "observation:" in recent:
+                # After we got a tool result, conclude with a Final
+                # (for the demo we just echo a plausible answer; the real number
+                # will have been computed by the actual tool in run_react)
+                try:
+                    # safe-ish eval for the demo only
+                    if all(ch in "0123456789 +*-/(). " for ch in expr):
+                        val = eval(expr, {"__builtins__": {}}, {})
+                        return f"Thought: The calculation is complete.\nFinal Answer: {val}\n"
+                except Exception:
+                    pass
+                return "Thought: The calculation is complete.\nFinal Answer: The result of the requested operation.\n"
+
+            if "calc[" in prompt.lower() or "action:" in prompt:
+                return f"Thought: I need to calculate that.\nAction: calc[{expr}]\n"
+
             if "lookup[" in prompt.lower() or "crystals" in prompt.lower():
                 return "Thought: The story mentions glowing crystals.\nAction: lookup[crystals]\n"
+
             return "Thought: I have enough information.\nFinal Answer: The crystals hold a surprising amount of energy according to the machine.\n"
         else:
             # fast / lower quality
