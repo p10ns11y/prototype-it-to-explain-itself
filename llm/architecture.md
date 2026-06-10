@@ -64,6 +64,7 @@ flowchart TD
     ReAct -->|batch runs + return_trajectory for scoring| Evaluator
     ReAct -->|any backend via Predictor seam + metrics| Playground
     ReAct + Evaluator -->|good trajectories + self-critique filter| DataFactory["Synthetic Data Factory<br/>synthetic_data_factory.py"]
+    ReAct -->|lifted into typed states + validated transitions| Typed["Typed Workflow<br/>typed_agent_workflow.py"]
     ReAct & Memory -->|full integration example| Explainer
 
     %% Legend / notes
@@ -318,6 +319,7 @@ It uses `verbose=True` so you can see:
 | `trajectory_evaluator`       | `mini_react` + `tiny...`               | (standalone)                   |
 | `local_inference_playground` | `mini_react` + `tiny...` (any backend) | (standalone)                   |
 | `synthetic_data_factory`     | `mini_react` + Evaluator + Predictor   | (data + optional training)     |
+| `typed_agent_workflow`       | `mini_react` + Predictor (typed lift)  | (typed safety layer)           |
 | `memory_explainer`           | `mini_react` + `memory` + `tiny...`    | (explainer)                    |
 
 

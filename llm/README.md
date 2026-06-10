@@ -368,6 +368,30 @@ After training you can load the new `_synthetic.pt` checkpoint in the playground
 
 This is the smallest visible version of the "use your agent's own outputs to make the next version better" loop that powers modern agent and model improvement pipelines.
 
+## Typed Agent Workflow
+
+See `typed_agent_workflow.py`.
+
+This prototype attacks reliability at the type level instead of (or in addition to) prompting and evaluation.
+
+It defines a small set of frozen dataclasses and an Enum for every legal step in a ReAct trajectory (Thought, Action, Observation, FinalAnswer, Error). A simple validator enforces the only allowed transitions:
+
+- Thought → Action or Final
+- Action → Observation or Error
+- Observation → Thought
+- Final / Error → end
+
+The existing untyped run_react is still used to let the tiny model do its thing, but its output is immediately lifted into the typed world. Anything that doesn't fit becomes an explicit ErrorStep.
+
+In Rust (the production mirror for this prototype) you would get compile-time guarantees via exhaustive match and typestates. The Python version here is the educational stand-in that still runs in our repository and reuses the Predictor.
+
+Run:
+
+```bash
+python llm/typed_agent_workflow.py
+python llm/typed_agent_workflow.py --backend stub-smart --question "calc[9*9]"
+```
+
 ### Sequencing — What Comes Next
 
 We keep every new prototype small by adding **one** clear idea on top of what already exists:
@@ -378,6 +402,7 @@ We keep every new prototype small by adding **one** clear idea on top of what al
 4. **Trajectory Evaluator** (`trajectory_evaluator.py`) — run many ReAct episodes, score outcome + process + weak self-judge, produce reports. (Implemented — this is how we turn demos into an improvement loop.)
 5. **Local Inference Playground** (`local_inference_playground.py`) — demonstrate that the entire agent stack only ever talks to a `Predictor`. Swap in stub "local" backends (or the real tiny one) and measure latency/quality while keeping ReAct, memory, and the evaluator 100% unchanged. (Implemented)
 6. **Synthetic Data Factory** (`synthetic_data_factory.py`) — generate many trajectories, self-critique + filter the good ones, turn them into training data, and (optionally) actually improve the model. Closes the "agent improves itself" loop. (Implemented)
+7. **Typed Agent Workflow** (`typed_agent_workflow.py`) — model the ReAct loop with strict types and an explicit state machine so many classes of invalid execution become impossible or loudly rejected. Python illustration of the "reliability by construction" idea (the real version belongs in Rust). (Implemented)
 
 Later steps deliberately choose different languages/stacks when they teach the concept better and match real production usage (Rust for typed/verifiable workflows, GUI stacks for human oversight, mixed backends for local inference, etc.). The Predictor is the place where language boundaries become possible.
 

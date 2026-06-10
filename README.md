@@ -37,6 +37,7 @@ This matches the spirit of clear English that Orwell set out.
 - An **Agent Trajectory Evaluator** (`trajectory_evaluator.py`) that runs many ReAct episodes against a small benchmark, scores outcome/process/soundness (including a weak self-judge), and produces reports so you can see whether a change actually helps.
 - A **Local Inference Playground** (`local_inference_playground.py`) that proves the Predictor seam works: the same ReAct + memory + evaluator code runs unchanged against different backends (real tiny model or simulated "local" ones) while showing live latency/quality metrics.
 - A **Synthetic Data Factory** (`synthetic_data_factory.py`) that generates trajectories, filters the good ones with self-critique, turns them into training data, and can actually improve the model. The "agent improves itself" flywheel made tiny and visible.
+- A **Typed Agent Workflow** (`typed_agent_workflow.py`) that models the ReAct loop with strict types and a state machine so many classes of invalid execution become impossible or explicitly rejected. Python illustration of reliability-by-construction (ideal in Rust).
 
 More prototypes will live in their own folders under this root. Each one will target one mechanism that is easy to use but hard to see.
 
