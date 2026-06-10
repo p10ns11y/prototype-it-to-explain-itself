@@ -1,0 +1,45 @@
+---
+import DocsLayout from '../layouts/DocsLayout.astro';
+---
+
+<DocsLayout title="Knowledge Hub" description="Reference docs + active recall for Prototype It To Explain Itself">
+  <div class="max-w-3xl">
+    <h1 class="text-4xl font-semibold tracking-tight mb-3">Prototype Knowledge Hub</h1>
+    <p class="text-lg text-slate-400">
+      High-quality reference pages for the core concepts + the interactive spaced-repetition tester.
+    </p>
+
+    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <a href="/concepts/llm-architecture" class="block p-6 bg-slate-900 border border-slate-800 rounded-3xl hover:border-blue-600 transition-colors">
+        <div class="font-semibold">Architecture &amp; the Predictor Seam</div>
+        <div class="text-sm text-slate-400 mt-1">The narrow waist that makes everything composable and future-proof.</div>
+      </a>
+
+      <a href="/concepts/llm-readme" class="block p-6 bg-slate-900 border border-slate-800 rounded-3xl hover:border-blue-600 transition-colors">
+        <div class="font-semibold">LLM Prototypes Guide</div>
+        <div class="text-sm text-slate-400 mt-1">The living reference for every prototype, with run commands and sequencing.</div>
+      </a>
+
+      <a href="/concepts/prototype-roadmap" class="block p-6 bg-slate-900 border border-slate-800 rounded-3xl hover:border-blue-600 transition-colors">
+        <div class="font-semibold">The 9-Prototype Roadmap</div>
+        <div class="text-sm text-slate-400 mt-1">Why each prototype exists, what it teaches, and the production stack it mirrors.</div>
+      </a>
+
+      <a href="/concepts/sampling-strategies" class="block p-6 bg-slate-900 border border-slate-800 rounded-3xl hover:border-blue-600 transition-colors">
+        <div class="font-semibold">Sampling Strategies</div>
+        <div class="text-sm text-slate-400 mt-1">Why temperature alone is not enough (Top-k, Top-p, real-world defaults).</div>
+      </a>
+    </div>
+
+    <div class="mt-10 p-6 bg-slate-900 border border-slate-800 rounded-3xl">
+      <div class="font-medium mb-2">Active Recall Companion</div>
+      <p class="text-sm text-slate-400 mb-4">
+        The single-file Knowledge Reflection &amp; Tester uses spaced repetition over the same concepts.
+        Use the hosted reference pages for deep reading, then switch to the tester for deliberate practice.
+      </p>
+      <a href="/knowledge-reflection-tester.html" class="inline-flex items-center gap-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-2xl text-sm font-medium">
+        Open the Tester <i class="fa-solid fa-arrow-right"></i>
+      </a>
+    </div>
+  </div>
+</DocsLayout>

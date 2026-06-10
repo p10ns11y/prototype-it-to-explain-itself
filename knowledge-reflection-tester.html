@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Reflection & Tester • Prototype It To Explain Itself</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --primary: #3b82f6;
+        }
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif;
+            font-weight: 600;
+        }
+
+        .concept-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .concept-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+
+        .review-card {
+            transition: all 0.3s ease;
+        }
+
+        .mermaid-like {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }
+
+        .knowledge-item {
+            transition: all 0.2s ease;
+        }
+
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+
+        .nav-tab {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-tab.active:after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #3b82f6;
+        }
+
+        .rating-btn {
+            transition: all 0.1s ease;
+        }
+        
+        .rating-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .stat-card {
+            transition: transform 0.2s ease;
+        }
+
+        .concept-tag {
+            font-size: 0.75rem;
+            padding: 1px 8px;
+            border-radius: 9999px;
+            font-weight: 500;
+        }
+
+        .due-badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 9999px;
+        }
+
+        .quality-1 { background-color: #fee2e2; color: #b91c1c; }
+        .quality-2 { background-color: #fef3c7; color: #92400e; }
+        .quality-3 { background-color: #dbeafe; color: #1e40af; }
+        .quality-4 { background-color: #d1fae5; color: #166534; }
+
+        .sr-card {
+            min-height: 380px;
+        }
+
+        .explanation-box {
+            background-color: #f8fafc;
+            border-left: 4px solid #64748b;
+        }
+
+        .metric {
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-200">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="flex items-center justify-between px-8 pt-8 pb-6 border-b border-slate-800">
+            <div class="flex items-center gap-x-3">
+                <div class="w-11 h-11 bg-blue-600 rounded-2xl flex items-center justify-center">
+                    <i class="fa-solid fa-brain text-white text-3xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-display text-3xl font-semibold tracking-tighter">Knowledge Reflection &amp; Tester</h1>
+                    <p class="text-sm text-slate-400 -mt-1">Prototype It To Explain Itself • Spaced Repetition</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-x-2 text-sm">
+                <div class="px-3 py-1.5 bg-slate-900 rounded-2xl flex items-center gap-x-2 text-xs border border-slate-800">
+                    <div class="flex items-center gap-x-1.5">
+                        <i class="fa-solid fa-sync fa-sm text-emerald-400"></i>
+                        <span id="total-reviews" class="font-medium">0</span>
+                    </div>
+                    <div class="text-slate-500">reviews</div>
+                </div>
+                
+                <button onclick="resetProgress()" 
+                        class="px-3 py-1.5 text-xs bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-2xl flex items-center gap-x-2 transition-colors">
+                    <i class="fa-solid fa-undo fa-sm"></i>
+                    <span>Reset</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="px-8 pt-6">
+            <div class="flex items-center gap-x-1 border-b border-slate-800">
+                <button onclick="showSection('dashboard')" 
+                        class="nav-tab px-5 py-3 text-sm font-medium flex items-center gap-x-2 active" id="tab-dashboard">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button onclick="startReviewSession()" 
+                        class="px-5 py-3 text-sm font-medium flex items-center gap-x-2 bg-blue-600 hover:bg-blue-500 transition-colors rounded-t-2xl text-white">
+                    <i class="fa-solid fa-play"></i>
+                    <span id="review-button-text">Review Due Items</span>
+                </button>
+                <button onclick="showSection('library')" 
+                        class="nav-tab px-5 py-3 text-sm font-medium flex items-center gap-x-2" id="tab-library">
+                    <i class="fa-solid fa-book"></i>
+                    <span>Library</span>
+                </button>
+                <button onclick="showSection('stats')" 
+                        class="nav-tab px-5 py-3 text-sm font-medium flex items-center gap-x-2" id="tab-stats">
+                    <i class="fa-solid fa-tachometer-alt"></i>
+                    <span>Mastery</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- DASHBOARD -->
+        <div id="section-dashboard" class="section active px-8 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                
+                <!-- Due Today -->
+                <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <div class="text-sm font-medium text-slate-400">TODAY'S REVIEW</div>
+                            <div class="text-6xl font-semibold tracking-tighter mt-1" id="due-count">0</div>
+                        </div>
+                        <div class="text-right">
+                            <i class="fa-solid fa-calendar-check text-4xl text-blue-400 opacity-75"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm text-slate-400 mb-4">items due for spaced repetition</div>
+                    
+                    <button onclick="startReviewSession()" 
+                            class="w-full py-3 bg-blue-600 hover:bg-blue-500 transition-all active:scale-[0.985] font-semibold rounded-2xl flex items-center justify-center gap-x-2">
+                        <i class="fa-solid fa-play"></i>
+                        <span>Begin Review Session</span>
+                    </button>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="lg:col-span-7 grid grid-cols-3 gap-3">
+                    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5">
+                        <div class="text-xs uppercase tracking-widest text-slate-500">Total Items</div>
+                        <div class="text-4xl font-semibold mt-2" id="total-items">0</div>
+                        <div class="text-emerald-400 text-xs mt-3 flex items-center gap-x-1">
+                            <i class="fa-solid fa-check-double"></i>
+                            <span>High quality</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5">
+                        <div class="text-xs uppercase tracking-widest text-slate-500">Avg Ease</div>
+                        <div class="text-4xl font-semibold mt-2" id="avg-ease">—</div>
+                        <div class="text-xs mt-3 text-slate-400">Higher = better retention</div>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5">
+                        <div class="text-xs uppercase tracking-widest text-slate-500">Reviewed Today</div>
+                        <div class="text-4xl font-semibold mt-2" id="reviewed-today">0</div>
+                        <div class="text-xs mt-3 flex items-center gap-x-1 text-amber-400">
+                            <i class="fa-solid fa-fire"></i>
+                            <span id="streak-text">Keep the streak</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Categories Overview -->
+                <div class="lg:col-span-12">
+                    <div class="flex items-center justify-between mb-3 px-1">
+                        <div class="text-sm font-semibold text-slate-300">Concepts by Category</div>
+                        <div class="text-xs text-slate-500">Click to filter library</div>
+                    </div>
+                    
+                    <div id="category-pills" class="flex flex-wrap gap-2">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LIBRARY -->
+        <div id="section-library" class="section px-8 py-8">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <div class="text-xl font-semibold">Knowledge Library</div>
+                    <div class="text-sm text-slate-400">Browse all reflection prompts and test questions</div>
+                </div>
+                
+                <div class="flex items-center gap-x-2">
+                    <input type="text" id="search-input" placeholder="Search prompts..." 
+                           class="bg-slate-900 border border-slate-700 focus:border-slate-500 transition-colors px-4 py-2 text-sm rounded-2xl w-72 outline-none"
+                           onkeyup="filterLibrary()">
+                    
+                    <select id="category-filter" onchange="filterLibrary()" 
+                            class="bg-slate-900 border border-slate-700 text-sm rounded-2xl px-3 py-2 outline-none">
+                        <option value="">All categories</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="library-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <!-- Populated dynamically by JS -->
+            </div>
+        </div>
+
+        <!-- STATS / MASTERY -->
+        <div id="section-stats" class="section px-8 py-8">
+            <div class="max-w-4xl">
+                <div class="text-xl font-semibold mb-1">Mastery Overview</div>
+                <div class="text-slate-400 text-sm mb-6">Track retention strength across the core ideas of the project</div>
+                
+                <div id="mastery-list" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+                
+                <div class="mt-8 p-5 bg-slate-900 border border-slate-800 rounded-3xl text-sm">
+                    <div class="font-medium mb-2 text-slate-300">Spaced Repetition Notes</div>
+                    <ul class="space-y-2 text-slate-400 text-sm list-disc pl-5">
+                        <li>Items are scheduled using a simplified SM-2 style algorithm.</li>
+                        <li>Rating <strong>Easy</strong> significantly increases the interval.</li>
+                        <li>Rating <strong>Again</strong> or <strong>Hard</strong> resets the item close to today.</li>
+                        <li>High-quality items test application and interconnections, not just recall.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REVIEW MODAL -->
+    <div id="review-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-3xl rounded-3xl overflow-hidden shadow-2xl">
+            
+            <!-- Modal Header -->
+            <div class="px-6 pt-5 pb-3 flex items-center justify-between bg-slate-950 border-b border-slate-800">
+                <div class="flex items-center gap-x-3">
+                    <div class="text-sm font-medium px-3 py-1 bg-slate-800 rounded-full" id="review-progress">3 / 12</div>
+                    <div class="text-sm text-slate-400" id="review-category"></div>
+                </div>
+                <button onclick="closeReviewModal()" 
+                        class="text-slate-400 hover:text-slate-200 px-3 py-1 text-sm flex items-center gap-x-1">
+                    <i class="fa-solid fa-times"></i>
+                    <span class="hidden sm:inline">End session</span>
+                </button>
+            </div>
+            
+            <div class="p-6">
+                <!-- Question / Prompt -->
+                <div class="mb-5">
+                    <div class="text-xs uppercase tracking-[1px] font-semibold text-blue-400 mb-2" id="item-type-badge"></div>
+                    <div id="current-prompt" class="text-2xl leading-tight font-medium text-balance"></div>
+                </div>
+                
+                <!-- MCQ Options -->
+                <div id="mcq-container" class="hidden mb-6 space-y-2">
+                    <!-- Populated by JS -->
+                </div>
+                
+                <!-- Reflection textarea -->
+                <div id="reflection-container" class="hidden mb-6">
+                    <textarea id="reflection-input" rows="5" placeholder="Write your reflection here..." 
+                              class="w-full bg-slate-950 border border-slate-700 focus:border-slate-500 rounded-2xl p-4 text-sm outline-none"></textarea>
+                </div>
+                
+                <!-- Answer / Explanation (revealed) -->
+                <div id="explanation-panel" class="hidden mb-6 explanation-box rounded-2xl p-5">
+                    <div class="uppercase text-xs tracking-widest font-semibold text-slate-400 mb-2">Explanation / Model Answer</div>
+                    <div id="explanation-text" class="text-sm leading-relaxed text-slate-200"></div>
+                    
+                    <div id="mcq-feedback" class="hidden mt-3 text-sm font-medium"></div>
+                </div>
+                
+                <!-- Action area -->
+                <div class="flex flex-col gap-y-4">
+                    <!-- Pre-reveal actions -->
+                    <div id="pre-reveal-actions">
+                        <button onclick="revealAnswer()" 
+                                class="w-full py-3.5 bg-white text-slate-900 hover:bg-slate-100 font-semibold rounded-2xl flex items-center justify-center gap-x-2 text-sm">
+                            <i class="fa-solid fa-eye"></i>
+                            <span id="reveal-button-text">Reveal Explanation</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Post-reveal rating -->
+                    <div id="rating-section" class="hidden">
+                        <div class="text-center text-xs text-slate-400 mb-3 font-medium">How well did you understand / recall this?</div>
+                        
+                        <div class="grid grid-cols-4 gap-2">
+                            <button onclick="rateItem(1)" class="rating-btn py-3 px-2 text-xs font-medium bg-red-900/30 hover:bg-red-900/50 border border-red-800 text-red-300 rounded-2xl flex flex-col items-center">
+                                <div>Again</div>
+                                <div class="text-[10px] opacity-60">1 day</div>
+                            </button>
+                            <button onclick="rateItem(2)" class="rating-btn py-3 px-2 text-xs font-medium bg-amber-900/30 hover:bg-amber-900/50 border border-amber-800 text-amber-300 rounded-2xl flex flex-col items-center">
+                                <div>Hard</div>
+                                <div class="text-[10px] opacity-60">3 days</div>
+                            </button>
+                            <button onclick="rateItem(3)" class="rating-btn py-3 px-2 text-xs font-medium bg-blue-900/30 hover:bg-blue-900/50 border border-blue-800 text-blue-300 rounded-2xl flex flex-col items-center">
+                                <div>Good</div>
+                                <div class="text-[10px] opacity-60">7 days</div>
+                            </button>
+                            <button onclick="rateItem(4)" class="rating-btn py-3 px-2 text-xs font-medium bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-800 text-emerald-300 rounded-2xl flex flex-col items-center">
+                                <div>Easy</div>
+                                <div class="text-[10px] opacity-60">14+ days</div>
+                            </button>
+                        </div>
+                        
+                        <div class="text-center text-[10px] text-slate-500 mt-3">Your rating updates the spaced repetition schedule</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // HIGH-QUALITY KNOWLEDGE ITEMS
+        // ============================================
+        // These are designed to strengthen deep conceptual understanding,
+        // highlight interconnections between prototypes, and surface common
+        // misconceptions. They are suitable for spaced repetition.
+        let knowledgeItems = [
+            {
+                id: "predictor-narrow-waist",
+                category: "The Predictor Abstraction",
+                prompt: "Why is the Predictor abstraction called the 'narrow waist' of the entire architecture?",
+                type: "reflection",
+                explanation: "It is the thinnest, most stable contract (text → text) that everything else builds upon. The base TinyLLM stays pure. ReAct, memory, evaluators, and future backends only depend on this interface. This enables swapping the underlying model or even moving to completely different languages/runtimes without touching higher-level agent logic.",
+                tags: ["composition", "abstraction", "design"]
+            },
+            {
+                id: "why-not-bloat-base",
+                category: "The Predictor Abstraction",
+                prompt: "What would go wrong if we added ReAct loop logic, memory, or tool calling directly inside simple_llm_prototype.py?",
+                type: "reflection",
+                explanation: "The base prototype would lose its purity as a teaching tool for next-token prediction. Future work on different backends (Ollama, MLX, etc.) or polyglot implementations would become much harder. The 'composition via narrow waist' principle would be violated.",
+                tags: ["composition", "teaching"]
+            },
+            {
+                id: "react-responsibility",
+                category: "ReAct Control Loop",
+                prompt: "In the tiny ReAct implementation, who is actually responsible for calling the tool and creating the Observation?",
+                type: "mcq",
+                options: [
+                    { text: "The tiny LSTM model", correct: false },
+                    { text: "The Python control loop (run_react)", correct: true },
+                    { text: "The Predictor abstraction", correct: false },
+                    { text: "The training loop", correct: false }
+                ],
+                explanation: "The model only does next-token prediction. The agent (the Python code) is responsible for the control loop: building the prompt, parsing the output, calling real tools, and appending Observations. This separation is fundamental.",
+                tags: ["react", "agent-vs-model"]
+            },
+            {
+                id: "tool-reliability-purpose",
+                category: "Tool-Use Reliability",
+                prompt: "What is the primary pedagogical value of the Tool-Use Reliability Lab (Proto 2)?",
+                type: "mcq",
+                options: [
+                    { text: "To prove that tiny models can do production tool calling", correct: false },
+                    { text: "To make the difficulty of reliable format following and argument correctness visible and measurable", correct: true },
+                    { text: "To train the model on better ReAct examples", correct: false },
+                    { text: "To replace human evaluation entirely", correct: false }
+                ],
+                explanation: "With a tiny overfit model, success rates are expected to be low. The lab turns anecdotal failures into quantitative data (success rate by category, arg correctness, etc.). This measurement infrastructure is what makes later improvement work meaningful.",
+                tags: ["evaluation", "measurement"]
+            },
+            {
+                id: "memory-seams",
+                category: "Memory Systems",
+                prompt: "Why was the memory module deliberately built with no vector database and only keyword-overlap retrieval?",
+                type: "reflection",
+                explanation: "To keep the entire concept small and readable. The goal was to make STM vs LTM + retrieval completely understandable in one file. Adding a real vector store would have hidden the core ideas behind library complexity. The extra_context seam was designed so a real retriever could be swapped in later without changing ReAct.",
+                tags: ["memory", "simplicity", "seams"]
+            },
+            {
+                id: "evaluator-enables-synthetic",
+                category: "Evaluation & Synthetic Data",
+                prompt: "How does the Trajectory Evaluator (Proto 4) directly enable the Synthetic Data Factory (Proto 6)?",
+                type: "reflection",
+                explanation: "The evaluator produces scored trajectories with outcome + process metrics. These scores (especially from a weak LLM-as-judge or heuristic success) become the filtering signal. Only 'good' trajectories are turned into synthetic training examples. Without measurement, you have no principled way to select data that will actually improve the model.",
+                tags: ["data-flywheel", "evaluation"]
+            },
+            {
+                id: "local-inference-seam",
+                category: "Local Inference Playground",
+                prompt: "What does the Local Inference Playground actually prove?",
+                type: "mcq",
+                options: [
+                    { text: "That our tiny model is as good as Llama-3", correct: false },
+                    { text: "That the entire agent stack (ReAct, memory, evaluators) can remain completely unchanged while swapping the underlying 'brain'", correct: true },
+                    { text: "That we should always use the tiny model in production", correct: false },
+                    { text: "That metrics are unnecessary", correct: false }
+                ],
+                explanation: "By providing multiple backends behind the exact same Predictor interface, it demonstrates that higher-level concepts are decoupled from any specific model implementation. This is the foundation for everything that comes after (real local models, synthetic data, etc.).",
+                tags: ["seam", "decoupling"]
+            },
+            {
+                id: "synthetic-flywheel",
+                category: "Synthetic Data & Self-Improvement",
+                prompt: "Describe the self-improvement flywheel that Proto 4 + Proto 6 create.",
+                type: "reflection",
+                explanation: "Evaluator scores many runs → filter high-quality trajectories (using outcome + weak judge) → turn them into training text that teaches format + domain behavior → mix with original corpus and train → plug the improved model back into the evaluator/playground → repeat. The agent literally improves itself using its own measured successes.",
+                tags: ["self-improvement", "data-flywheel"]
+            },
+            {
+                id: "typed-reliability",
+                category: "Typed Workflows",
+                prompt: "What is the core idea behind making agent workflows 'typed'?",
+                type: "reflection",
+                explanation: "Instead of hoping the model and parser always produce valid sequences, you make invalid states difficult or impossible to represent in the type system (or at runtime via exhaustive validation). A FinalAnswer cannot be followed by another Action. An Observation cannot appear without a preceding Action. Many classes of bugs become type errors or explicit ErrorSteps.",
+                tags: ["reliability", "types"]
+            },
+            {
+                id: "human-oversight-patterns",
+                category: "Human-in-the-Loop",
+                prompt: "Why is human oversight treated as a first-class architectural concern rather than an afterthought?",
+                type: "reflection",
+                explanation: "Real agents (especially early ones) are rarely fully autonomous. By making low-confidence surfacing, explicit intervention points, and full audit logging part of the design from the beginning, we treat oversight as a core loop rather than a patch. The same Predictor seam means the human can supervise any backend.",
+                tags: ["oversight", "production-reality"]
+            },
+            {
+                id: "multi-agent-value",
+                category: "Multi-Agent Systems",
+                prompt: "What is the main reason multiple agents + a critic often outperform a single agent on hard tasks (even with the same underlying model)?",
+                type: "mcq",
+                options: [
+                    { text: "The models become magically smarter", correct: false },
+                    { text: "Diversity of reasoning paths + explicit critique/synthesis step surfaces better answers", correct: true },
+                    { text: "It reduces the need for good prompting", correct: false },
+                    { text: "It always produces shorter answers", correct: false }
+                ],
+                explanation: "Different configurations (temperature, memory, prompt variation, or different backends) produce different proposals. The critic round forces comparison and reconciliation. This is the same principle behind self-consistency, mixture-of-agents, and debate patterns used in production.",
+                tags: ["multi-agent", "emergence"]
+            },
+            {
+                id: "principles-interconnection",
+                category: "Core Principles",
+                prompt: "How do the principles of 'small self-explanatory prototypes' and 'composition via narrow waist' work together?",
+                type: "reflection",
+                explanation: "Keeping each prototype tiny and highly readable makes the concepts legible. The narrow waist (Predictor) then lets you compose these legible pieces without duplication or bloat. You get both understandability (each piece is small) and power (you can combine them arbitrarily, including across languages later).",
+                tags: ["principles", "composition"]
+            },
+            {
+                id: "tiny-model-lesson",
+                category: "Core Principles",
+                prompt: "Why was it pedagogically valuable to use an extremely weak tiny model throughout the prototypes instead of jumping straight to a strong local LLM?",
+                type: "reflection",
+                explanation: "A weak model makes every failure mode visible: format drift, bad tool arguments, poor memory use, inability to self-critique, etc. These problems still exist with strong models, but they are harder to see and debug. The tiny model turns the hard parts of agent building into measurable, discussable phenomena rather than invisible magic.",
+                tags: ["pedagogy", "limitations"]
+            }
+        ];
+
+        // ============================================
+        // STATE MANAGEMENT & SPACED REPETITION
+        // ============================================
+        let state = {
+            items: {}, // id -> {due, interval, ease, lastReviewed, reviews: [...] }
+            globalStats: {
+                totalReviews: 0,
+                reviewedToday: 0,
+                lastReviewDate: null
+            }
+        };
+
+        const STORAGE_KEY = 'knowledge-tester-state-v1';
+
+        function loadState() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    state = JSON.parse(saved);
+                } catch (e) {
+                    console.warn("Failed to load state, resetting");
+                }
+            }
+            
+            // Ensure every knowledge item has state
+            knowledgeItems.forEach(item => {
+                if (!state.items[item.id]) {
+                    state.items[item.id] = {
+                        due: getToday(),
+                        interval: 0,
+                        ease: 2.5,
+                        lastReviewed: null,
+                        reviews: []
+                    };
+                }
+            });
+            
+            // Migrate old items if needed
+            saveState();
+        }
+
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        }
+
+        function getToday() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function addDays(dateStr, days) {
+            const date = new Date(dateStr);
+            date.setDate(date.getDate() + days);
+            return date.toISOString().split('T')[0];
+        }
+
+        function getDueItems() {
+            const today = getToday();
+            return knowledgeItems.filter(item => {
+                const itemState = state.items[item.id];
+                return itemState && itemState.due <= today;
+            });
+        }
+
+        function updateItemAfterReview(itemId, quality) {
+            const itemState = state.items[itemId];
+            const today = getToday();
+            
+            let newInterval = itemState.interval;
+            let newEase = itemState.ease;
+            
+            if (quality <= 2) {
+                newInterval = 1;
+                newEase = Math.max(1.3, newEase - 0.2);
+            } else {
+                if (newInterval === 0) newInterval = 1;
+                newInterval = Math.max(1, Math.round(newInterval * newEase));
+                
+                if (quality === 4) {
+                    newEase = Math.min(2.5, newEase + 0.1);
+                }
+            }
+            
+            // Apply quality multiplier for more aggressive scheduling
+            if (quality === 4) newInterval = Math.round(newInterval * 1.3);
+            if (quality === 3) newInterval = Math.round(newInterval * 1.1);
+            
+            const newDue = addDays(today, newInterval);
+            
+            itemState.due = newDue;
+            itemState.interval = newInterval;
+            itemState.ease = newEase;
+            itemState.lastReviewed = today;
+            itemState.reviews.push({ date: today, quality: quality });
+            
+            // Global stats
+            state.globalStats.totalReviews++;
+            
+            if (state.globalStats.lastReviewDate !== today) {
+                state.globalStats.reviewedToday = 1;
+                state.globalStats.lastReviewDate = today;
+            } else {
+                state.globalStats.reviewedToday++;
+            }
+            
+            saveState();
+        }
+
+        // ============================================
+        // UI & RENDERING
+        // ============================================
+        let currentReviewItems = [];
+        let currentReviewIndex = 0;
+        let currentItem = null;
+        let currentRating = null;
+
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            // Show target
+            document.getElementById(`section-${section}`).classList.add('active');
+            
+            // Update tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active', 'text-white');
+                if (tab.id === `tab-${section}`) {
+                    tab.classList.add('active', 'text-white');
+                }
+            });
+            
+            if (section === 'library') {
+                renderLibrary();
+            } else if (section === 'stats') {
+                renderMastery();
+            }
+        }
+
+        function updateDashboard() {
+            const dueItems = getDueItems();
+            document.getElementById('due-count').textContent = dueItems.length;
+            
+            // Total items
+            document.getElementById('total-items').textContent = knowledgeItems.length;
+            
+            // Average ease
+            let totalEase = 0;
+            let count = 0;
+            knowledgeItems.forEach(item => {
+                const s = state.items[item.id];
+                if (s) {
+                    totalEase += s.ease;
+                    count++;
+                }
+            });
+            const avgEase = count > 0 ? (totalEase / count).toFixed(1) : '—';
+            document.getElementById('avg-ease').textContent = avgEase;
+            
+            // Reviewed today
+            document.getElementById('reviewed-today').textContent = state.globalStats.reviewedToday || 0;
+            
+            // Streak text (very simple)
+            const streakEl = document.getElementById('streak-text');
+            if (state.globalStats.reviewedToday > 0) {
+                streakEl.innerHTML = `<span class="text-emerald-400">Great work today</span>`;
+            } else {
+                streakEl.textContent = 'Review something today';
+            }
+            
+            // Category pills
+            renderCategoryPills();
+            
+            // Update review button
+            const btnText = document.getElementById('review-button-text');
+            if (dueItems.length > 0) {
+                btnText.textContent = `Review ${dueItems.length} Due Items`;
+            } else {
+                btnText.textContent = 'Review Due Items';
+            }
+        }
+
+        function renderCategoryPills() {
+            const container = document.getElementById('category-pills');
+            container.innerHTML = '';
+            
+            const categories = {};
+            knowledgeItems.forEach(item => {
+                if (!categories[item.category]) categories[item.category] = 0;
+                categories[item.category]++;
+            });
+            
+            const dueMap = {};
+            getDueItems().forEach(item => {
+                dueMap[item.category] = (dueMap[item.category] || 0) + 1;
+            });
+            
+            Object.entries(categories).forEach(([cat, total]) => {
+                const due = dueMap[cat] || 0;
+                const pill = document.createElement('div');
+                pill.className = `px-4 py-1.5 rounded-2xl text-xs flex items-center gap-x-2 cursor-pointer border border-slate-700 hover:border-slate-500 transition-colors ${due > 0 ? 'bg-blue-950/40' : 'bg-slate-900'}`;
+                pill.innerHTML = `
+                    <span class="font-medium">${cat}</span>
+                    <span class="text-slate-400">(${total})</span>
+                    ${due > 0 ? `<span class="due-badge bg-blue-600 text-white text-[10px] px-1.5">${due} due</span>` : ''}
+                `;
+                pill.onclick = () => {
+                    showSection('library');
+                    document.getElementById('category-filter').value = cat;
+                    filterLibrary();
+                };
+                container.appendChild(pill);
+            });
+        }
+
+        function renderLibrary(filteredItems = null) {
+            const container = document.getElementById('library-grid');
+            container.innerHTML = '';
+            
+            let itemsToShow = filteredItems || knowledgeItems;
+            
+            if (itemsToShow.length === 0) {
+                container.innerHTML = `<div class="col-span-full text-center py-8 text-slate-400">No items match your search.</div>`;
+                return;
+            }
+            
+            itemsToShow.forEach(item => {
+                const itemState = state.items[item.id];
+                const due = itemState ? itemState.due : '—';
+                const isDue = itemState && itemState.due <= getToday();
+                
+                const card = document.createElement('div');
+                card.className = `knowledge-item bg-slate-900 border border-slate-800 hover:border-slate-600 rounded-3xl p-5 cursor-pointer`;
+                
+                let typeBadge = '';
+                if (item.type === 'mcq') {
+                    typeBadge = `<span class="concept-tag bg-violet-900/60 text-violet-300">MCQ Test</span>`;
+                } else {
+                    typeBadge = `<span class="concept-tag bg-teal-900/60 text-teal-300">Reflection</span>`;
+                }
+                
+                card.innerHTML = `
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-x-2 mb-2">
+                                ${typeBadge}
+                                <span class="text-xs text-slate-500">${item.category}</span>
+                            </div>
+                            
+                            <div class="font-medium leading-snug text-[15px] line-clamp-3">
+                                ${item.prompt}
+                            </div>
+                            
+                            <div class="mt-4 flex items-center justify-between text-xs">
+                                <div class="flex items-center gap-x-1.5 text-slate-400">
+                                    <span class="font-mono">${itemState ? itemState.interval : 0}d</span>
+                                    <span class="text-slate-600">•</span>
+                                    <span>Ease ${itemState ? itemState.ease.toFixed(1) : '2.5'}</span>
+                                </div>
+                                
+                                <div class="${isDue ? 'text-blue-400 font-medium' : 'text-slate-400'}">
+                                    ${isDue ? 'Due today' : `Due ${due}`}
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <a href="${getDocsLinkForConcept(item.id)}" 
+                                   target="_blank"
+                                   onclick="event.stopImmediatePropagation()"
+                                   class="text-[10px] text-blue-400 hover:text-blue-300 underline">
+                                    Read full explainer →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                card.onclick = () => openItemDetail(item);
+                container.appendChild(card);
+            });
+        }
+
+        function filterLibrary() {
+            const search = document.getElementById('search-input').value.toLowerCase();
+            const category = document.getElementById('category-filter').value;
+            
+            let filtered = knowledgeItems;
+            
+            if (category) {
+                filtered = filtered.filter(i => i.category === category);
+            }
+            
+            if (search) {
+                filtered = filtered.filter(i => 
+                    i.prompt.toLowerCase().includes(search) || 
+                    (i.explanation && i.explanation.toLowerCase().includes(search)) ||
+                    (i.tags && i.tags.some(t => t.toLowerCase().includes(search)))
+                );
+            }
+            
+            renderLibrary(filtered);
+        }
+
+        function populateCategoryFilter() {
+            const select = document.getElementById('category-filter');
+            const categories = [...new Set(knowledgeItems.map(i => i.category))];
+            
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                select.appendChild(opt);
+            });
+        }
+
+        function openItemDetail(item) {
+            const modal = document.getElementById('review-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Reuse review UI but in "view mode"
+            document.getElementById('review-progress').textContent = 'Library View';
+            document.getElementById('review-category').textContent = item.category;
+            
+            document.getElementById('current-prompt').innerHTML = item.prompt;
+            
+            const typeBadge = document.getElementById('item-type-badge');
+            typeBadge.textContent = item.type === 'mcq' ? 'MULTIPLE CHOICE' : 'REFLECTION PROMPT';
+            typeBadge.className = `text-xs uppercase tracking-[1px] font-semibold ${item.type === 'mcq' ? 'text-violet-400' : 'text-teal-400'} mb-2`;
+            
+            // Hide review-specific things
+            document.getElementById('pre-reveal-actions').classList.add('hidden');
+            document.getElementById('rating-section').classList.add('hidden');
+            
+            const mcqContainer = document.getElementById('mcq-container');
+            const reflectionContainer = document.getElementById('reflection-container');
+            const explanationPanel = document.getElementById('explanation-panel');
+            
+            mcqContainer.classList.add('hidden');
+            reflectionContainer.classList.add('hidden');
+            explanationPanel.classList.remove('hidden');
+            
+            // Show explanation directly
+            document.getElementById('explanation-text').innerHTML = item.explanation.replace(/\n/g, '<br>');
+            
+            if (item.type === 'mcq' && item.options) {
+                const feedback = document.getElementById('mcq-feedback');
+                feedback.classList.remove('hidden');
+                feedback.innerHTML = `<span class="text-emerald-400">Correct answer:</span> ${item.options.find(o => o.correct).text}`;
+            }
+            
+            // Add close button behavior override
+            const closeBtn = modal.querySelector('button');
+            closeBtn.onclick = () => {
+                closeReviewModal();
+                showSection('library'); // return to library
+            };
+        }
+
+        // ============================================
+        // REVIEW SESSION
+        // ============================================
+        function startReviewSession() {
+            const dueItems = getDueItems();
+            
+            if (dueItems.length === 0) {
+                alert("No items are due for review today. Great job staying on top of things!");
+                return;
+            }
+            
+            // Shuffle
+            currentReviewItems = [...dueItems].sort(() => Math.random() - 0.5);
+            currentReviewIndex = 0;
+            
+            document.getElementById('review-modal').classList.remove('hidden');
+            document.getElementById('review-modal').classList.add('flex');
+            
+            showCurrentReviewItem();
+        }
+
+        function showCurrentReviewItem() {
+            if (currentReviewIndex >= currentReviewItems.length) {
+                finishReviewSession();
+                return;
+            }
+            
+            currentItem = currentReviewItems[currentReviewIndex];
+            const progressEl = document.getElementById('review-progress');
+            progressEl.textContent = `${currentReviewIndex + 1} / ${currentReviewItems.length}`;
+            
+            document.getElementById('review-category').textContent = currentItem.category;
+            document.getElementById('current-prompt').innerHTML = currentItem.prompt;
+            
+            const typeBadge = document.getElementById('item-type-badge');
+            typeBadge.textContent = currentItem.type === 'mcq' ? 'MULTIPLE CHOICE' : 'REFLECTION';
+            typeBadge.className = `text-xs uppercase tracking-[1px] font-semibold ${currentItem.type === 'mcq' ? 'text-violet-400' : 'text-teal-400'} mb-2`;
+            
+            // Reset UI
+            document.getElementById('pre-reveal-actions').classList.remove('hidden');
+            document.getElementById('rating-section').classList.add('hidden');
+            document.getElementById('explanation-panel').classList.add('hidden');
+            
+            const mcqContainer = document.getElementById('mcq-container');
+            const reflectionContainer = document.getElementById('reflection-container');
+            
+            mcqContainer.innerHTML = '';
+            mcqContainer.classList.add('hidden');
+            reflectionContainer.classList.add('hidden');
+            
+            document.getElementById('reveal-button-text').textContent = 
+                currentItem.type === 'mcq' ? 'Submit Answer' : 'Reveal Explanation';
+            
+            if (currentItem.type === 'mcq' && currentItem.options) {
+                mcqContainer.classList.remove('hidden');
+                
+                currentItem.options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = `w-full text-left p-4 border border-slate-700 hover:border-slate-500 rounded-2xl transition-colors flex items-start gap-x-3 text-sm ${currentItem._selected === idx ? 'border-blue-500 bg-blue-950/30' : ''}`;
+                    btn.innerHTML = `
+                        <div class="w-5 h-5 rounded-full border border-slate-500 flex-shrink-0 mt-0.5 flex items-center justify-center text-xs">
+                            ${String.fromCharCode(65 + idx)}
+                        </div>
+                        <div>${opt.text}</div>
+                    `;
+                    btn.onclick = () => {
+                        // Deselect others
+                        Array.from(mcqContainer.children).forEach(c => c.classList.remove('border-blue-500', 'bg-blue-950/30'));
+                        btn.classList.add('border-blue-500', 'bg-blue-950/30');
+                        currentItem._selected = idx;
+                    };
+                    mcqContainer.appendChild(btn);
+                });
+            } else {
+                reflectionContainer.classList.remove('hidden');
+                document.getElementById('reflection-input').value = '';
+            }
+        }
+
+        function revealAnswer() {
+            const explanationPanel = document.getElementById('explanation-panel');
+            const preActions = document.getElementById('pre-reveal-actions');
+            const ratingSection = document.getElementById('rating-section');
+            
+            preActions.classList.add('hidden');
+            explanationPanel.classList.remove('hidden');
+            ratingSection.classList.remove('hidden');
+            
+            document.getElementById('explanation-text').innerHTML = currentItem.explanation.replace(/\n/g, '<br>');
+            
+            // Append a deep link to the full hosted explainer (works when deployed together with the site/)
+            const explainerLink = getDocsLinkForConcept(currentItem.id);
+            const linkHtml = `<div class="mt-4 text-xs"><a href="${explainerLink}" target="_blank" class="text-blue-400 hover:text-blue-300 underline">Read the full explainer for this concept →</a></div>`;
+            document.getElementById('explanation-text').insertAdjacentHTML('beforeend', linkHtml);
+            
+            // Handle MCQ feedback
+            const mcqFeedback = document.getElementById('mcq-feedback');
+            if (currentItem.type === 'mcq' && currentItem.options) {
+                mcqFeedback.classList.remove('hidden');
+                
+                const selectedIdx = currentItem._selected;
+                const correctIdx = currentItem.options.findIndex(o => o.correct);
+                
+                if (selectedIdx === undefined) {
+                    mcqFeedback.innerHTML = `<span class="text-amber-400">No answer selected.</span> Correct: <strong>${currentItem.options[correctIdx].text}</strong>`;
+                } else if (selectedIdx === correctIdx) {
+                    mcqFeedback.innerHTML = `<span class="text-emerald-400">Correct!</span>`;
+                } else {
+                    mcqFeedback.innerHTML = `<span class="text-red-400">Not quite.</span> Correct: <strong>${currentItem.options[correctIdx].text}</strong>`;
+                }
+            } else {
+                mcqFeedback.classList.add('hidden');
+            }
+        }
+
+        function rateItem(quality) {
+            if (!currentItem) return;
+            
+            updateItemAfterReview(currentItem.id, quality);
+            
+            // Move to next
+            currentReviewIndex++;
+            
+            // Small delay for UX
+            setTimeout(() => {
+                showCurrentReviewItem();
+            }, 180);
+        }
+
+        function closeReviewModal() {
+            const modal = document.getElementById('review-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            
+            // Reset any temp state
+            currentReviewItems = [];
+            currentReviewIndex = 0;
+            currentItem = null;
+            
+            // Refresh dashboard
+            updateDashboard();
+            if (document.getElementById('section-library').classList.contains('active')) {
+                renderLibrary();
+            }
+        }
+
+        function finishReviewSession() {
+            const modal = document.getElementById('review-modal');
+            
+            modal.innerHTML = `
+                <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-3xl p-8 text-center">
+                    <div class="mx-auto w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center mb-5">
+                        <i class="fa-solid fa-check text-white text-3xl"></i>
+                    </div>
+                    
+                    <div class="text-2xl font-semibold">Session complete</div>
+                    <div class="text-slate-400 mt-1">You reviewed ${currentReviewItems.length} items.</div>
+                    
+                    <div class="my-6 h-px bg-slate-800"></div>
+                    
+                    <div class="text-sm text-slate-300">
+                        Spaced repetition works best with consistency.<br>
+                        Come back when new items become due.
+                    </div>
+                    
+                    <button onclick="closeReviewModalAndRefresh()" 
+                            class="mt-6 w-full py-3 bg-white text-slate-900 font-semibold rounded-2xl text-sm">
+                        Return to Dashboard
+                    </button>
+                </div>
+            `;
+        }
+
+        function closeReviewModalAndRefresh() {
+            const modal = document.getElementById('review-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            
+            // Restore original modal structure for next time (simple way)
+            location.reload(); // easiest way to reset the modal DOM
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        function initializeApp() {
+            // Tailwind script already loaded
+            loadState();
+            
+            // Seed some items as due if first time
+            const today = getToday();
+            let hasAnyDue = false;
+            
+            knowledgeItems.forEach((item, index) => {
+                const s = state.items[item.id];
+                if (index < 8 && s.due > today) {
+                    s.due = today;
+                    hasAnyDue = true;
+                }
+            });
+            
+            if (hasAnyDue) saveState();
+            
+            // Populate UI
+            updateDashboard();
+            populateCategoryFilter();
+            
+            // Initial library render (hidden until tab clicked)
+            // But we can pre-render for speed
+            // renderLibrary(); // commented - only render when section shown
+            
+            // Keyboard support
+            document.addEventListener('keydown', function(e) {
+                const modal = document.getElementById('review-modal');
+                if (modal.classList.contains('hidden')) return;
+
+                // Do not hijack keys while the user is typing in a form control
+                // (especially the reflection textarea). This was causing the reveal
+                // to fire on the first space after typing a word.
+                if (e.target && (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || e.target.isContentEditable)) {
+                    return;
+                }
+                
+                if (e.key === 'Escape') {
+                    closeReviewModal();
+                }
+                
+                if (e.key === ' ' || e.key === 'Enter') {
+                    const revealPanel = document.getElementById('pre-reveal-actions');
+                    if (!revealPanel.classList.contains('hidden')) {
+                        e.preventDefault();
+                        revealAnswer();
+                    }
+                }
+                
+                // Rating shortcuts
+                if (!document.getElementById('rating-section').classList.contains('hidden')) {
+                    if (e.key === '1') rateItem(1);
+                    if (e.key === '2') rateItem(2);
+                    if (e.key === '3') rateItem(3);
+                    if (e.key === '4') rateItem(4);
+                }
+            });
+            
+            // Make sure dashboard is visible on load
+            document.getElementById('section-dashboard').classList.add('active');
+            
+            // Initial stats
+            console.log('%c[Knowledge Tester] App initialized with ' + knowledgeItems.length + ' high-quality items', 'color:#64748b');
+        }
+        
+        // Boot the app
+        window.onload = initializeApp;
+        
+        // ============================================
+        // INTEGRATION HELPERS (for future docs site + URL deep links)
+        // ============================================
+        const DOCS_BASE = '/concepts'; // Will be produced by the Astro site in /site/
+                                       // When opened as a lone file this can be overridden
+                                       // or fall back to GitHub rendered versions.
+
+        function getDocsLinkForConcept(conceptId) {
+            // Map concept ids to nice doc paths. For now we use a simple convention.
+            // The Astro site (or future TanStack app) will honor these.
+            const slugMap = {
+                'predictor-narrow-waist': 'llm-architecture',
+                'why-not-bloat-base': 'llm-architecture',
+                'react-responsibility': 'llm-readme',
+                'tool-reliability-purpose': 'llm-readme',
+                'memory-seams': 'llm-readme',
+                'evaluator-enables-synthetic': 'prototype-roadmap',
+                'local-inference-seam': 'llm-readme',
+                'synthetic-flywheel': 'prototype-roadmap',
+                'typed-reliability': 'llm-readme',
+                'human-oversight-patterns': 'llm-readme',
+                'multi-agent-value': 'prototype-roadmap',
+                'principles-interconnection': 'root-readme',
+                'tiny-model-lesson': 'root-readme'
+            };
+            const slug = slugMap[conceptId] || 'llm-readme';
+            return `${DOCS_BASE}/${slug}#${conceptId}`;
+        }
+
+        function applyUrlParamsOnLoad() {
+            const params = new URLSearchParams(window.location.search);
+            const concept = params.get('concept');
+            const autoReview = params.get('review') === '1' || params.get('startReview') === '1';
+
+            if (concept) {
+                const item = knowledgeItems.find(i => i.id === concept);
+                if (item) {
+                    // If auto-review requested, start a focused session for just this concept
+                    if (autoReview) {
+                        // Slight delay so the rest of the app is ready
+                        setTimeout(() => {
+                            currentReviewItems = [item];
+                            currentReviewIndex = 0;
+                            const modal = document.getElementById('review-modal');
+                            modal.classList.remove('hidden');
+                            modal.classList.add('flex');
+                            showCurrentReviewItem();
+                        }, 50);
+                    } else {
+                        // Otherwise just open the detail view (nice for "learn more" from docs)
+                        setTimeout(() => openItemDetail(item), 50);
+                    }
+                }
+            }
+        }
+
+        // Hook the param handler after the app has booted
+        const originalOnload = window.onload;
+        window.onload = function() {
+            if (originalOnload) originalOnload();
+            // Run after initializeApp has done its thing
+            setTimeout(applyUrlParamsOnLoad, 100);
+        };
+
+        // Expose a couple things for debugging / future extension
+        window.KNOWLEDGE_TESTER = {
+            getState: () => state,
+            reset: () => { localStorage.removeItem('knowledge-tester-state-v1'); location.reload(); },
+            openConcept: (id) => {
+                const item = knowledgeItems.find(i => i.id === id);
+                if (item) openItemDetail(item);
+            }
+        };
+    </script>
+</body>
+</html>

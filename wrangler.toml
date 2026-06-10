@@ -1,0 +1,17 @@
+# Optional helper for local Cloudflare Pages development.
+# The real deployment is usually done by connecting the GitHub repo in the Cloudflare dashboard
+# or using `wrangler pages deploy` on the combined output.
+
+name = "prototype-knowledge-hub"
+compatibility_date = "2025-01-01"
+
+[build]
+command = "cd site && npm run build"
+
+[build.upload]
+dir = "site/dist"
+# When deploying a unified site you would also copy ../knowledge-reflection-tester.html
+# into the final dist (or serve it from a different Pages project / custom domain).
+
+[site]
+bucket = "./site/dist"

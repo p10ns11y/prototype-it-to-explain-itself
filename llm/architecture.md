@@ -25,6 +25,8 @@ These rules come from repeated pain fixing the exact same "SQS" / bracket-in-lab
 - This file (`architecture.md`): layered diagram + interconnections table + usage notes.
 - `PROTOTYPE_ROADMAP.md` status.
 
+The project now also maintains a hosted **Knowledge Reflection & Tester** and **Reference Site** (Astro-powered, deployed alongside on Cloudflare Pages). New work should consider whether the architecture diagram or interconnections need corresponding updates in the hosted docs.
+
 This keeps the collection self-explanatory as it grows.
 
 ## High-Level Overview: How Everything Is Connected

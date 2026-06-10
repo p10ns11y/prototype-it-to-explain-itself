@@ -1,0 +1,34 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+---
+
+<DocsLayout title="Concepts">
+  <h1 class="text-3xl font-semibold mb-6">All Reference Pages</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <a href="/concepts/llm-architecture" class="block p-5 bg-slate-900 border border-slate-800 rounded-3xl hover:border-blue-600">
+      <div class="font-medium">Architecture &amp; the Predictor Seam</div>
+      <div class="text-sm text-slate-400">The narrow waist and layered design.</div>
+    </a>
+
+    <a href="/concepts/llm-readme" class="block p-5 bg-slate-900 border border-slate-800 rounded-3xl hover:border-blue-600">
+      <div class="font-medium">LLM Prototypes Guide</div>
+      <div class="text-sm text-slate-400">Living reference for every prototype + sequencing.</div>
+    </a>
+
+    <a href="/concepts/prototype-roadmap" class="block p-5 bg-slate-900 border border-slate-800 rounded-3xl hover:border-blue-600">
+      <div class="font-medium">The 9-Prototype Roadmap</div>
+      <div class="text-sm text-slate-400">Rationale, production mirrors, and status.</div>
+    </a>
+
+    <a href="/concepts/sampling-strategies" class="block p-5 bg-slate-900 border border-slate-800 rounded-3xl hover:border-blue-600">
+      <div class="font-medium">Sampling Strategies</div>
+      <div class="text-sm text-slate-400">Top-k, Top-p, and why temperature alone is not enough.</div>
+    </a>
+  </div>
+
+  <div class="mt-8 text-sm text-slate-400">
+    These pages are rendered from the project's canonical Markdown sources.
+    The single-file <a href="/knowledge-reflection-tester.html" class="underline">Knowledge Tester</a> provides active recall over the same concepts.
+  </div>
+</DocsLayout>

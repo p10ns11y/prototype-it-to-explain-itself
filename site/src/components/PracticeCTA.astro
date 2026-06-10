@@ -1,0 +1,16 @@
+---
+interface Props {
+  concept: string;
+  label?: string;
+}
+
+const { concept, label = "Test this concept with spaced repetition" } = Astro.props;
+const testerUrl = `/knowledge-reflection-tester.html?concept=${concept}&review=1`;
+---
+
+<a
+  href={testerUrl}
+  class="inline-flex items-center gap-x-2 mt-4 px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-500 rounded-2xl transition-colors"
+>
+  {label} <i class="fa-solid fa-arrow-right"></i>
+</a>

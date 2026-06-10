@@ -93,6 +93,8 @@ This `PROTOTYPE_ROADMAP.md` now makes the full curated list + status + principle
 4. Update this roadmap + the llm/root READMEs as each prototype lands.
 5. (Optional) Re-run `python llm/tool_reliability_lab.py` or the memory explainer after changes to keep the "it explains itself" loop alive.
 
+**New tooling (2026)**: The project now has a hosted **Knowledge Reflection & Tester** (single-file, spaced repetition over the 9 prototypes and principles) and a **Knowledge Reference Site** (`site/`, Astro + MDX) that renders the explainer documentation (architecture, llm/README, sampling strategies, roadmap, etc.) as beautiful reference pages with full Mermaid support and bidirectional links back into the tester for active recall. Both are designed to deploy easily to Cloudflare Pages and to evolve toward a TanStack-based experience later. See the root README for links.
+
 ---
 
 Build the smallest thing that still carries the heart of the idea. Then let the prototype (and this roadmap) do the explaining.

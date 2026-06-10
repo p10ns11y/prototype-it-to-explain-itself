@@ -1,0 +1,54 @@
+---
+title: "Sampling Strategies"
+description: "Why temperature alone is not enough, and how Top-k / Top-p actually work in practice."
+conceptIds: ["tiny-model-lesson"]
+---
+
+import PracticeCTA from '../../components/PracticeCTA.astro';
+
+# Sampling Strategies
+
+Temperature is the most famous control, but on its own it is blunt.
+
+This reference explains the two most important production techniques (Top-k and nucleus / Top-p) and why the combination of temperature + top-p is the practical default in almost every deployed LLM (including Grok).
+
+## The Core Problem
+
+A model produces a probability distribution over the vocabulary at every step.
+
+- High temperature → more random / creative.
+- Low temperature → more deterministic / repetitive.
+
+But temperature alone does not prevent the model from putting tiny probability mass on a huge number of bad tokens.
+
+## Top-k Sampling
+
+Keep only the k most likely tokens and renormalize.
+
+**Intuition table** (simplified):
+
+| k   | Behavior                     | Risk                     |
+|-----|------------------------------|--------------------------|
+| 1   | Greedy / very safe           | Repetitive, boring       |
+| 10  | Good balance for most tasks  | Can still pick weird tail tokens |
+| 40–50 | Common production default  | More diversity           |
+
+## Nucleus Sampling (Top-p)
+
+Keep the smallest set of tokens whose cumulative probability exceeds p.
+
+This is dynamic — on some steps it may keep 5 tokens, on others 200.
+
+This is generally preferred over fixed Top-k because it adapts to the shape of the distribution.
+
+## Practical Defaults (2024–2025)
+
+Most teams ship something like:
+
+- Temperature 0.7–1.0
+- Top-p 0.9–0.95
+- (Sometimes Top-k 40–50 as a secondary cap)
+
+The combination gives controllable creativity while cutting off the long tail of low-probability garbage.
+
+<PracticeCTA concept="tiny-model-lesson" label="Reflect on why a tiny model makes these problems extremely visible" />
