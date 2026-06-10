@@ -41,6 +41,7 @@ flowchart TD
 
     subgraph Usage["Layer 4: Usage & Testing"]
         Lab["Reliability Lab<br/>tool_reliability_lab.py"]
+        Evaluator["Trajectory Evaluator<br/>trajectory_evaluator.py"]
         Explainer["Memory Explainer<br/>memory_explainer.py"]
     end
 
@@ -51,6 +52,7 @@ flowchart TD
 
     %% Runtime usage (what consumes the composed system)
     ReAct -->|reuses run_react + tools| Lab
+    ReAct -->|batch runs + return_trajectory for scoring| Evaluator
     ReAct & Memory -->|full integration example| Explainer
 
     %% Legend / notes
@@ -302,6 +304,7 @@ It uses `verbose=True` so you can see:
 | `mini_react`           | `simple...` + `tiny_predictor`      | Lab, Explainer, future agents  |
 | `memory`               | (self-contained)                    | Explainer (and any agent)      |
 | `tool_reliability_lab` | `mini_react` + `tiny...`            | (standalone)                   |
+| `trajectory_evaluator` | `mini_react` + `tiny...`            | (standalone)                   |
 | `memory_explainer`     | `mini_react` + `memory` + `tiny...` | (explainer)                    |
 
 

@@ -290,6 +290,29 @@ block = format_memories(stm.get(), relevant)
 prompt = build_prompt(question, tools, trajectory, extra_context=block)
 ```
 
+## Trajectory Evaluator
+
+See `trajectory_evaluator.py`.
+
+This is the first "meta" prototype: it treats the ReAct agent (and future agents) as a system you can run many times and score.
+
+It defines a tiny benchmark of goals in the Elara world, runs `run_react` in batch mode (using the new `return_trajectory=True` option), and scores every trajectory on three axes:
+
+- **Outcome** — simple heuristic checks on the final answer (did it contain an expected fact or number?).
+- **Process** — steps taken and tool calls made (efficiency + whether the agent even tried to use tools).
+- **Soundness** — optional weak "LLM-as-judge" that asks the *same tiny model* to rate the reasoning 1-5 and give a one-sentence reason. (Expect this to be noisy or unparsable — that's data.)
+
+The script prints a summary report, per-category breakdown, and one or two example trajectories so the concrete failure modes are visible.
+
+Run:
+
+```bash
+python llm/trajectory_evaluator.py
+python llm/trajectory_evaluator.py --max-steps 6 --episodes 8 --judge
+```
+
+Because the underlying model is deliberately tiny and story-overfit, success rates will be low. The value is turning "the agent sometimes works" into numbers and concrete traces you can improve against.
+
 ### Sequencing — What Comes Next
 
 We keep every new prototype small by adding **one** clear idea on top of what already exists:
@@ -297,7 +320,7 @@ We keep every new prototype small by adding **one** clear idea on top of what al
 1. **Mini ReAct** — the control loop + the Predictor abstraction.
 2. **Tool-Use Reliability Lab** — run the same ReAct + tools many times and measure how often parsing and tool use succeed.
 3. **Memory** — a tiny `memory.py` (short-term window + simple long-term facts with retrieval) that can be injected into the prompt the ReAct sends to the Predictor. `memory_explainer.py` demonstrates the full loop.
-4. **Trajectory Evaluator** — score many runs, produce reports, use the tiny model itself as a weak judge.
+4. **Trajectory Evaluator** (`trajectory_evaluator.py`) — run many ReAct episodes, score outcome + process + weak self-judge, produce reports. (Implemented — this is how we turn demos into an improvement loop.)
 
 Later steps deliberately choose different languages/stacks when they teach the concept better and match real production usage (Rust for typed/verifiable workflows, GUI stacks for human oversight, mixed backends for local inference, etc.). The Predictor is the place where language boundaries become possible.
 

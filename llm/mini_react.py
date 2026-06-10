@@ -246,13 +246,17 @@ def run_react(
     max_steps: int = 5,
     verbose: bool = True,
     extra_context: str = "",
-) -> str:
+    return_trajectory: bool = False,
+) -> str | tuple[str, list[str], int]:
     """Run the classic ReAct loop and return the final answer (or best effort).
 
     extra_context: Optional text (e.g. memory snippets from memory.py) that will
     be inserted into the prompt right before the final "Thought:" hand-off.
     This is the supported way to inject memory or other context without changing
     the core ReAct logic.
+
+    return_trajectory: If True, return (answer_or_last, trajectory_list, steps_used)
+                       instead of just the string. Useful for evaluators and analysis.
     """
     trajectory: List[str] = []
     tool_map = {t.name.lower(): t for t in tools}
@@ -332,6 +336,8 @@ def run_react(
             if verbose:
                 print(f"\n[AGENT] ReAct loop finished with final answer.")
                 print(f"        Elara's answer: {final}\n")
+            if return_trajectory:
+                return final, list(trajectory), step
             return final
 
         # 2. Did it request an action?
@@ -414,6 +420,8 @@ def run_react(
         print()
         print("This is common with the tiny model because it struggles with the")
         print("required output format. The loop itself ran correctly.")
+    if return_trajectory:
+        return last, list(trajectory), max_steps
     return last
 
 
