@@ -50,6 +50,7 @@ flowchart TD
     subgraph Usage["Layer 4: Usage & Testing"]
         Lab["Reliability Lab<br/>tool_reliability_lab.py"]
         Evaluator["Trajectory Evaluator<br/>trajectory_evaluator.py"]
+        Playground["Local Inference<br/>Playground<br/>local_inference_playground.py"]
         Explainer["Memory Explainer<br/>memory_explainer.py"]
     end
 
@@ -61,6 +62,7 @@ flowchart TD
     %% Runtime usage (what consumes the composed system)
     ReAct -->|reuses run_react + tools| Lab
     ReAct -->|batch runs + return_trajectory for scoring| Evaluator
+    ReAct -->|any backend via Predictor seam + metrics| Playground
     ReAct & Memory -->|full integration example| Explainer
 
     %% Legend / notes
@@ -311,9 +313,10 @@ It uses `verbose=True` so you can see:
 | `tiny_predictor`       | `simple_llm_prototype`              | All higher layers              |
 | `mini_react`           | `simple...` + `tiny_predictor`      | Lab, Explainer, future agents  |
 | `memory`               | (self-contained)                    | Explainer (and any agent)      |
-| `tool_reliability_lab` | `mini_react` + `tiny...`            | (standalone)                   |
-| `trajectory_evaluator` | `mini_react` + `tiny...`            | (standalone)                   |
-| `memory_explainer`     | `mini_react` + `memory` + `tiny...` | (explainer)                    |
+| `tool_reliability_lab`     | `mini_react` + `tiny...`            | (standalone)                   |
+| `trajectory_evaluator`     | `mini_react` + `tiny...`            | (standalone)                   |
+| `local_inference_playground` | `mini_react` + `tiny...` (any backend) | (standalone)                |
+| `memory_explainer`         | `mini_react` + `memory` + `tiny...` | (explainer)                    |
 
 
 The **Predictor** is the only stable boundary. Everything else is free to evolve.

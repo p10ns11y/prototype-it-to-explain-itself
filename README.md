@@ -35,6 +35,7 @@ This matches the spirit of clear English that Orwell set out.
 - A **Tool-Use Reliability Lab** that runs many test cases against the ReAct agent, records which tools were actually called, and produces success-rate reports.
 - A **Memory** module (`memory.py`) providing short-term (recent turns) and long-term (fact retrieval) memory, with `memory_explainer.py` showing the full ReAct loop with memory injected.
 - An **Agent Trajectory Evaluator** (`trajectory_evaluator.py`) that runs many ReAct episodes against a small benchmark, scores outcome/process/soundness (including a weak self-judge), and produces reports so you can see whether a change actually helps.
+- A **Local Inference Playground** (`local_inference_playground.py`) that proves the Predictor seam works: the same ReAct + memory + evaluator code runs unchanged against different backends (real tiny model or simulated "local" ones) while showing live latency/quality metrics.
 
 More prototypes will live in their own folders under this root. Each one will target one mechanism that is easy to use but hard to see.
 

@@ -315,6 +315,34 @@ python llm/trajectory_evaluator.py --max-steps 6 --episodes 8 --judge
 
 Because the underlying model is deliberately tiny and story-overfit, success rates will be low. The value is turning "the agent sometimes works" into numbers and concrete traces you can improve against.
 
+## Local Inference Playground
+
+See `local_inference_playground.py`.
+
+This prototype exists to prove that the Predictor abstraction (`prompt: str → text`) really is a stable seam.
+
+It provides several backends that all satisfy the exact same `Predictor` callable:
+
+- `tiny-lstm` — the real character-level model we have been using all along.
+- `stub-fast` and `stub-smart` — pure-Python simulations of "local inference" with different latency/quality trade-offs (no external models required).
+
+You can:
+- Run a full ReAct agent (or the evaluator) against any backend.
+- See live metrics (wall time, simulated tokens/s).
+- Run a small benchmark comparing backends on the same questions.
+
+Crucially, `mini_react.py`, `memory.py`, `trajectory_evaluator.py`, and the tools are never modified when you change the brain.
+
+Run:
+
+```bash
+python llm/local_inference_playground.py --backend stub-smart
+python llm/local_inference_playground.py --backend tiny-lstm --benchmark --runs 4
+python llm/local_inference_playground.py --backend stub-fast --question "..." 
+```
+
+In a real environment you would replace the stubs with `from_ollama(...)`, `from_llama_cpp(...)`, `from_mlx(...)` etc. The agent code would stay identical.
+
 ### Sequencing — What Comes Next
 
 We keep every new prototype small by adding **one** clear idea on top of what already exists:
@@ -323,6 +351,7 @@ We keep every new prototype small by adding **one** clear idea on top of what al
 2. **Tool-Use Reliability Lab** — run the same ReAct + tools many times and measure how often parsing and tool use succeed.
 3. **Memory** — a tiny `memory.py` (short-term window + simple long-term facts with retrieval) that can be injected into the prompt the ReAct sends to the Predictor. `memory_explainer.py` demonstrates the full loop.
 4. **Trajectory Evaluator** (`trajectory_evaluator.py`) — run many ReAct episodes, score outcome + process + weak self-judge, produce reports. (Implemented — this is how we turn demos into an improvement loop.)
+5. **Local Inference Playground** (`local_inference_playground.py`) — demonstrate that the entire agent stack only ever talks to a `Predictor`. Swap in stub "local" backends (or the real tiny one) and measure latency/quality while keeping ReAct, memory, and the evaluator 100% unchanged. (Implemented)
 
 Later steps deliberately choose different languages/stacks when they teach the concept better and match real production usage (Rust for typed/verifiable workflows, GUI stacks for human oversight, mixed backends for local inference, etc.). The Predictor is the place where language boundaries become possible.
 
