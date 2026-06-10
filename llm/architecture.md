@@ -63,11 +63,16 @@ flowchart TD
     ReAct -->|reuses run_react + tools| Lab
     ReAct -->|batch runs + return_trajectory for scoring| Evaluator
     ReAct -->|any backend via Predictor seam + metrics| Playground
-    ReAct + Evaluator -->|good trajectories + self-critique filter| DataFactory["Synthetic Data Factory<br/>synthetic_data_factory.py"]
+    ReAct -->|good trajectories| DataFactory["Synthetic Data Factory<br/>synthetic_data_factory.py"]
+    Evaluator -->|self-critique filter| DataFactory
     ReAct -->|lifted into typed states + validated transitions| Typed["Typed Workflow<br/>typed_agent_workflow.py"]
-    ReAct + Evaluator -->|low-confidence surfacing + intervention points| HIL["Human-in-the-Loop<br/>human_in_loop.py"]
-    ReAct + Evaluator + Memory -->|specialists + critic + synthesis| Multi["Multi-Agent Debate<br/>multi_agent_debate.py"]
-    ReAct & Memory -->|full integration example| Explainer
+    ReAct -->|low-confidence surfacing| HIL["Human-in-the-Loop<br/>human_in_loop.py"]
+    Evaluator -->|intervention points| HIL
+    ReAct -->|specialists| Multi["Multi-Agent Debate<br/>multi_agent_debate.py"]
+    Evaluator -->|critic + synthesis| Multi
+    Memory -->|specialists| Multi
+    ReAct -->|full integration example| Explainer
+    Memory -->|full integration example| Explainer
 
     %% Legend / notes
     classDef waist fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
