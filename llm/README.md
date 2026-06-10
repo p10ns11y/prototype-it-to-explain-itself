@@ -14,7 +14,9 @@ That loop, scaled up, produces fluent writing, code, and reasoning.
 
 This prototype makes that loop visible and runnable.
 
-For a broader view of how all the modules (Predictor, ReAct, Memory, Reliability Lab) fit together, see **[architecture.md](architecture.md)**.
+For a broader view of how all the modules (Predictor, ReAct, Memory, Reliability Lab, Trajectory Evaluator) fit together, see **[architecture.md](architecture.md)**.
+
+**Rule:** After implementing any new prototype, the author must update the root README, this file (new section + sequencing), and `architecture.md`.
 
 ## How Text Flows During Generation
 

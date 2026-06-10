@@ -59,13 +59,20 @@ Do this a few times and the abstract claim turns into a felt fact.
 
 ## Future Direction
 
-We will add one prototype at a time. Each new folder will contain:
+We will add one prototype at a time. Each new prototype (usually under `llm/`) will contain:
 
 - The runnable code (as small as the concept allows)
-- A focused README with a visual diagram of the core flow
-- Clear notes on what was left out and why
+- Clear "WHAT YOU JUST SAW" educational blocks and examples
+- Visual explanations (Mermaid where they help) following the project's diagram rules
 
-The root README will stay short. It links the separate prototypes and restates the shared intent.
+**Mandatory documentation updates after every prototype:**
+
+- Update the "Current Prototypes" list in this root README.md (one concise bullet).
+- Add a dedicated section in `llm/README.md` (purpose, how it reuses prior pieces, run commands, limitations) and update the "Sequencing — What Comes Next" list.
+- Update `llm/architecture.md`: the high-level layered diagram (if it affects Composition/Usage layers), the interconnections table, and any relevant runtime usage notes.
+- Keep `PROTOTYPE_ROADMAP.md` status and the live todo list in sync.
+
+The root README stays short. It links the prototypes and restates the shared intent. `llm/README.md` and `architecture.md` are the detailed living references.
 
 ## License
 

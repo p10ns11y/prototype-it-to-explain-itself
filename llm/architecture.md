@@ -19,6 +19,14 @@ The design follows a **layered, composable** approach:
 
 These rules come from repeated pain fixing the exact same "SQS" / bracket-in-label parse errors.
 
+**Documentation rule:** After landing any new prototype, always update:
+- Root `README.md` "Current Prototypes" list (one bullet).
+- `llm/README.md` (new section + Sequencing list).
+- This file (`architecture.md`): layered diagram + interconnections table + usage notes.
+- `PROTOTYPE_ROADMAP.md` status.
+
+This keeps the collection self-explanatory as it grows.
+
 ## High-Level Overview: How Everything Is Connected
 
 This single diagram shows the full architecture and interconnections between all core modules.
