@@ -14,7 +14,7 @@ Core ideas (kept deliberately simple so the whole thing fits in one head):
 
 The module returns plain text snippets that can be dropped into a prompt.
 
-Usage example (inside a ReAct-style prompt builder):
+Usage example (with the ReAct agent):
 
     short_mem = ShortTermMemory(window=6)
     long_mem  = LongTermMemory()
@@ -24,7 +24,13 @@ Usage example (inside a ReAct-style prompt builder):
     ...
     memories = long_mem.retrieve(recent_turns + [current_goal], k=3)
     memory_block = format_memories(short_mem.get(), memories)
-    prompt = build_prompt(..., extra_context=memory_block)
+
+    final = run_react(
+        question=goal,
+        predictor=predictor,
+        tools=TOOLS,
+        extra_context=memory_block,   # <-- clean injection point
+    )
 """
 
 from __future__ import annotations

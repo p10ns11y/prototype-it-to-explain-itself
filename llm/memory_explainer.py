@@ -19,6 +19,9 @@ Run from the project root (after you have a saved model from mini_react.py):
     python llm/memory_explainer.py
     python llm/memory_explainer.py --temp 0.8 --max-steps 5
 
+Memory is injected cleanly using the `extra_context` parameter of `run_react`
+(the recommended integration point).
+
 The explainer keeps everything small and self-contained so you can see the
 memory → prompt → ReAct loop clearly.
 """
@@ -139,8 +142,7 @@ def main():
             tools=TOOLS,
             max_steps=args.max_steps,
             verbose=True,   # show the full [AGENT]/[MODEL] trace
-            # The memory block appears in the prompt right before the final Thought:
-            # (handled inside build_prompt via extra_context)
+            extra_context=memory_block,   # clean way to inject memory
         )
 
         # After the run, "remember" what happened for the next goal.

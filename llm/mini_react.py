@@ -24,6 +24,9 @@ Run it. Watch the trace. Change the question. Change the temperature.
 The first run trains the model (same as simple_llm_prototype.py).
 Every run after that loads the saved weights instantly — no more waiting.
 
+Memory support: Pass `extra_context=...` (see memory.py + memory_explainer.py)
+to inject short-term and/or retrieved long-term memory into the prompt.
+
 Usage (from project root):
     python llm/mini_react.py
     python llm/mini_react.py --question "How much energy might the crystals hold?" --max-steps 5 --temp 0.7
@@ -242,8 +245,15 @@ def run_react(
     tools: List[Tool],
     max_steps: int = 5,
     verbose: bool = True,
+    extra_context: str = "",
 ) -> str:
-    """Run the classic ReAct loop and return the final answer (or best effort)."""
+    """Run the classic ReAct loop and return the final answer (or best effort).
+
+    extra_context: Optional text (e.g. memory snippets from memory.py) that will
+    be inserted into the prompt right before the final "Thought:" hand-off.
+    This is the supported way to inject memory or other context without changing
+    the core ReAct logic.
+    """
     trajectory: List[str] = []
     tool_map = {t.name.lower(): t for t in tools}
 
@@ -260,7 +270,7 @@ def run_react(
         print("-" * 70)
 
     for step in range(1, max_steps + 1):
-        prompt = build_prompt(question, tools, trajectory)
+        prompt = build_prompt(question, tools, trajectory, extra_context=extra_context)
 
         # ------------------------------------------------------------------
         # AGENT: Prepare and send the prompt

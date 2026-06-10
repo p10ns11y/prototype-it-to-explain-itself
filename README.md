@@ -33,6 +33,7 @@ This matches the spirit of clear English that Orwell set out.
 - **[LLM fundamentals](llm/README.md)** — A character-level LSTM that trains on one short story and then generates new text in that style. The full next-token prediction loop fits in a few hundred lines of PyTorch. You can watch probabilities, tweak temperature, and swap the corpus.
 - A thin **Predictor** abstraction (in `llm/`) plus a **Mini ReAct agent** (Think → Act → Observe with tools) built on top.
 - A **Tool-Use Reliability Lab** that runs many test cases against the ReAct agent, records which tools were actually called, and produces success-rate reports.
+- A **Memory** module (`memory.py`) providing short-term (recent turns) and long-term (fact retrieval) memory, with `memory_explainer.py` showing the full ReAct loop with memory injected.
 
 More prototypes will live in their own folders under this root. Each one will target one mechanism that is easy to use but hard to see.
 

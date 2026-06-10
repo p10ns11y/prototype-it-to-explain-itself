@@ -14,6 +14,8 @@ That loop, scaled up, produces fluent writing, code, and reasoning.
 
 This prototype makes that loop visible and runnable.
 
+For a broader view of how all the modules (Predictor, ReAct, Memory, Reliability Lab) fit together, see **[architecture.md](architecture.md)**.
+
 ## How Text Flows During Generation
 
 ```mermaid
