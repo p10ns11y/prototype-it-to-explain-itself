@@ -132,19 +132,25 @@ TOOLS: List[Tool] = [
 # 3. PROMPT BUILDING (plain English, explicit sections)
 # ------------------------------------------------------------------
 
-def build_prompt(question: str, tools: List[Tool], trajectory: List[str]) -> str:
+def build_prompt(question: str, tools: List[Tool], trajectory: List[str],
+                 extra_context: str = "") -> str:
     """Build the prompt the predictor will continue.
 
     This version uses clear instructions + concrete few-shot examples
     written in the style of the Elara story. The tiny character-level model
     needs very explicit patterns to copy, otherwise it just rambles or
     echoes the instructions in broken form.
+
+    extra_context can be memory snippets, previous observations, etc.
+    It is inserted right before the final "Thought:" hand-off.
     """
     tool_lines = "\n".join(
         f"- {t.name}: {t.description}" for t in tools
     )
 
     history = "\n".join(trajectory) if trajectory else ""
+
+    context_block = f"\n{extra_context}\n" if extra_context else ""
 
     # The final "Thought:" is the hand-off to the model.
     # We repeat the format and give two worked examples that match the
@@ -173,7 +179,7 @@ or
 Final Answer: your best answer for Elara (do this when you are done)
 
 Goal: {question}
-
+{context_block}
 {history}
 Thought:"""
 

@@ -247,7 +247,7 @@ Observation: 14.0
 
 The loop is visible. The model's creativity (or lack of perfect formatting) is also visible. This is intentional.
 
-## Tool-Use Reliability Lab (next in sequence)
+## Tool-Use Reliability Lab
 
 See `tool_reliability_lab.py`.
 
@@ -261,18 +261,45 @@ python tool_reliability_lab.py
 
 With the current tiny model you will see very low reliability numbers. That is the pedagogical point — it makes the real-world difficulty of reliable tool use visible and quantifiable. Later prototypes can explore better prompting or different models against the same test suite.
 
+## Memory
+
+See `memory.py` and `memory_explainer.py`.
+
+A tiny, dependency-free memory module designed to be queried by the ReAct agent (or any Predictor-based loop). `memory_explainer.py` shows the full loop with memory injected into the prompt.
+
+It provides two layers:
+
+- **ShortTermMemory**: a fixed-size sliding window of recent turns.
+- **LongTermMemory**: a simple list of facts with cheap keyword-overlap retrieval (no vector DB yet — keeps the prototype tiny and easy to read).
+
+Retrieved memories are turned into a plain-text block via `format_memories(...)` and can be injected into the prompt using the new `extra_context` parameter on `build_prompt`.
+
+The module is deliberately small (one file, ~150 lines including a self-test) so you can understand the whole thing quickly and immediately see the effect on the prompt the tiny model receives.
+
+Example from the built-in demo:
+
+```python
+stm = ShortTermMemory(window=4)
+ltm = LongTermMemory()
+ltm.add_facts([... Elara story facts ...])
+...
+relevant = ltm.retrieve(recent_turns, k=2)
+block = format_memories(stm.get(), relevant)
+prompt = build_prompt(question, tools, trajectory, extra_context=block)
+```
+
 ### Sequencing — What Comes Next
 
 We keep every new prototype small by adding **one** clear idea on top of what already exists:
 
-1. **Mini ReAct** (this) — the control loop + the Predictor abstraction.
+1. **Mini ReAct** — the control loop + the Predictor abstraction.
 2. **Tool-Use Reliability Lab** — run the same ReAct + tools many times and measure how often parsing and tool use succeed.
-3. **Memory** — a tiny `memory.py` that the ReAct trajectory can query.
+3. **Memory** — a tiny `memory.py` (short-term window + simple long-term facts with retrieval) that can be injected into the prompt the ReAct sends to the Predictor. `memory_explainer.py` demonstrates the full loop.
 4. **Trajectory Evaluator** — score many runs, produce reports, use the tiny model itself as a weak judge.
 
 Later steps deliberately choose different languages/stacks when they teach the concept better and match real production usage (Rust for typed/verifiable workflows, GUI stacks for human oversight, mixed backends for local inference, etc.). The Predictor is the place where language boundaries become possible.
 
-See the approved plan and the todo list for the full prioritized sequence.
+See the todo list for the current status and the full prioritized sequence.
 
 ## This Prototype Fits a Larger Pattern
 
