@@ -179,6 +179,87 @@ The central act stays identical: predict, append, repeat.
 
 For a deeper look at **why temperature alone is not enough** and how production systems (including Grok) actually control generation, read [sampling-strategies.md](sampling-strategies.md). It covers Top-k and Top-p (nucleus) sampling with examples that map directly to the code in `generate_text`.
 
+## From Next-Token to Agent: The Mini ReAct Loop
+
+The original prototype shows the heart of every LLM: predict one token, append it, repeat.
+
+The next natural question is: "How do we turn that predictor into something that can *use tools* and solve tasks?"
+
+**ReAct** (Reason + Act) is one of the simplest and most effective patterns.
+
+It is not a bigger model. It is a small control loop:
+
+1. The predictor receives a prompt that contains the goal + tool descriptions + what has happened so far.
+2. It generates more text ("Thought: ...").
+3. The loop looks for a structured request ("Action: calc[2+3]").
+4. If found, the real Python tool runs and the result is appended as "Observation: ...".
+5. The growing history goes back into the next prompt.
+6. Repeat until the model writes "Final: ...".
+
+The LLM is still only doing next-token prediction. The *agent* is the Python code that orchestrates the loop, calls tools, and manages the trajectory.
+
+### Visual: ReAct Loop over the Predictor
+
+```mermaid
+flowchart TD
+    Q[Question for Elara] --> P[Build prompt:<br/>tools + history + "Thought:"]
+    P --> Pred["Predictor<br/>(tiny_predictor.py)"]
+    Pred --> Gen["TinyLLM generate_text<br/>(the same brain)"]
+    Gen --> Parse{Parse?}
+    Parse -->|Action: name[args]| Exec[Execute real Tool<br/>(calc, lookup...)]
+    Exec --> Obs["Observation: result"]
+    Obs --> Hist[Append to trajectory]
+    Parse -->|Final: answer| Done[Return answer]
+    Hist --> P
+    Parse -->|no clear action| Hist
+```
+
+The Predictor is the narrow reusable seam (see `tiny_predictor.py`). Everything above it (the loop, the tools, later memory and evaluators) only sees "text in → text out".
+
+### Run the New Prototypes
+
+```bash
+# The predictor abstraction itself (tiny)
+python llm/tiny_predictor.py   # (mostly docs + example factory)
+
+# The actual ReAct agent
+python llm/mini_react.py
+python llm/mini_react.py \
+  --question "How can Elara measure the power of the glowing crystals?" \
+  --max-steps 6 \
+  --temp 0.65
+```
+
+Both files live next to `simple_llm_prototype.py` and import from it. The training story, the Elara universe, and the generation primitive are all reused — no duplication of concepts.
+
+### What the Trace Looks Like (example)
+
+```
+=== STEP 2 ===
+Model thought / decided:
+The crystals glow when the machine is near. I should calculate how much
+energy they might hold if we assume each one gives a small spark.
+Action: calc[3 * 4 + 2]
+
+Action parsed: calc[3 * 4 + 2]
+Observation: 14.0
+```
+
+The loop is visible. The model's creativity (or lack of perfect formatting) is also visible. This is intentional.
+
+### Sequencing — What Comes Next
+
+We keep every new prototype small by adding **one** clear idea on top of what already exists:
+
+1. **Mini ReAct** (this) — the control loop + the Predictor abstraction.
+2. **Tool-Use Reliability Lab** — run the same ReAct + tools many times and measure how often parsing and tool use succeed.
+3. **Memory** — a tiny `memory.py` that the ReAct trajectory can query.
+4. **Trajectory Evaluator** — score many runs, produce reports, use the tiny model itself as a weak judge.
+
+Later steps deliberately choose different languages/stacks when they teach the concept better and match real production usage (Rust for typed/verifiable workflows, GUI stacks for human oversight, mixed backends for local inference, etc.). The Predictor is the place where language boundaries become possible.
+
+See the approved plan and the todo list for the full prioritized sequence.
+
 ## This Prototype Fits a Larger Pattern
 
 This is one working example of the "prototype it to explain itself" method.

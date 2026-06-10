@@ -30,7 +30,7 @@ This matches the spirit of clear English that Orwell set out.
 
 ## Current Prototypes
 
-- **[LLM fundamentals](llm/README.md)** — A character-level LSTM that trains on one short story and then generates new text in that style. The full next-token prediction loop fits in a few hundred lines of PyTorch. You can watch probabilities, tweak temperature, and swap the corpus.
+- **[LLM fundamentals](llm/README.md)** — A character-level LSTM that trains on one short story and then generates new text in that style. The full next-token prediction loop fits in a few hundred lines of PyTorch. You can watch probabilities, tweak temperature, and swap the corpus. A thin Predictor abstraction and a Mini ReAct agent (Think → Act → Observe loop with tools) now sit on top of the same predictor so you can see how "next token" becomes "agent that uses tools".
 
 More prototypes will live in their own folders under this root. Each one will target one mechanism that is easy to use but hard to see.
 
