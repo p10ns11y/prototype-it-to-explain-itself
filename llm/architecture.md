@@ -63,6 +63,7 @@ flowchart TD
     ReAct -->|reuses run_react + tools| Lab
     ReAct -->|batch runs + return_trajectory for scoring| Evaluator
     ReAct -->|any backend via Predictor seam + metrics| Playground
+    ReAct + Evaluator -->|good trajectories + self-critique filter| DataFactory["Synthetic Data Factory<br/>synthetic_data_factory.py"]
     ReAct & Memory -->|full integration example| Explainer
 
     %% Legend / notes
@@ -314,9 +315,10 @@ It uses `verbose=True` so you can see:
 | `mini_react`           | `simple...` + `tiny_predictor`      | Lab, Explainer, future agents  |
 | `memory`               | (self-contained)                    | Explainer (and any agent)      |
 | `tool_reliability_lab`     | `mini_react` + `tiny...`            | (standalone)                   |
-| `trajectory_evaluator`     | `mini_react` + `tiny...`            | (standalone)                   |
-| `local_inference_playground` | `mini_react` + `tiny...` (any backend) | (standalone)                |
-| `memory_explainer`         | `mini_react` + `memory` + `tiny...` | (explainer)                    |
+| `trajectory_evaluator`       | `mini_react` + `tiny...`               | (standalone)                   |
+| `local_inference_playground` | `mini_react` + `tiny...` (any backend) | (standalone)                   |
+| `synthetic_data_factory`     | `mini_react` + Evaluator + Predictor   | (data + optional training)     |
+| `memory_explainer`           | `mini_react` + `memory` + `tiny...`    | (explainer)                    |
 
 
 The **Predictor** is the only stable boundary. Everything else is free to evolve.

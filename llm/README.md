@@ -343,6 +343,31 @@ python llm/local_inference_playground.py --backend stub-fast --question "..."
 
 In a real environment you would replace the stubs with `from_ollama(...)`, `from_llama_cpp(...)`, `from_mlx(...)` etc. The agent code would stay identical.
 
+## Synthetic Data Factory
+
+See `synthetic_data_factory.py`.
+
+This is the self-improvement prototype. It uses everything built so far:
+
+- Runs the agent (via the evaluator or direct `run_react`) many times.
+- Adds a cheap self-critique step (another Predictor call that scores "was this a high-quality, correctly formatted run?").
+- Filters to keep only the good trajectories.
+- Turns the good traces into training text that teaches the model the ReAct format + useful Elara facts.
+- Optionally mixes the synthetic data with the original STORY and actually continues training the tiny model.
+
+The result is a new checkpoint that has seen its own (filtered) successful behavior.
+
+Run:
+
+```bash
+python llm/synthetic_data_factory.py --episodes 20 --filter
+python llm/synthetic_data_factory.py --episodes 15 --train --epochs 5
+```
+
+After training you can load the new `_synthetic.pt` checkpoint in the playground or evaluator and measure the improvement.
+
+This is the smallest visible version of the "use your agent's own outputs to make the next version better" loop that powers modern agent and model improvement pipelines.
+
 ### Sequencing — What Comes Next
 
 We keep every new prototype small by adding **one** clear idea on top of what already exists:
@@ -352,6 +377,7 @@ We keep every new prototype small by adding **one** clear idea on top of what al
 3. **Memory** — a tiny `memory.py` (short-term window + simple long-term facts with retrieval) that can be injected into the prompt the ReAct sends to the Predictor. `memory_explainer.py` demonstrates the full loop.
 4. **Trajectory Evaluator** (`trajectory_evaluator.py`) — run many ReAct episodes, score outcome + process + weak self-judge, produce reports. (Implemented — this is how we turn demos into an improvement loop.)
 5. **Local Inference Playground** (`local_inference_playground.py`) — demonstrate that the entire agent stack only ever talks to a `Predictor`. Swap in stub "local" backends (or the real tiny one) and measure latency/quality while keeping ReAct, memory, and the evaluator 100% unchanged. (Implemented)
+6. **Synthetic Data Factory** (`synthetic_data_factory.py`) — generate many trajectories, self-critique + filter the good ones, turn them into training data, and (optionally) actually improve the model. Closes the "agent improves itself" loop. (Implemented)
 
 Later steps deliberately choose different languages/stacks when they teach the concept better and match real production usage (Rust for typed/verifiable workflows, GUI stacks for human oversight, mixed backends for local inference, etc.). The Predictor is the place where language boundaries become possible.
 
