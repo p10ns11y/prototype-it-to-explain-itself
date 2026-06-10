@@ -66,6 +66,7 @@ flowchart TD
     ReAct + Evaluator -->|good trajectories + self-critique filter| DataFactory["Synthetic Data Factory<br/>synthetic_data_factory.py"]
     ReAct -->|lifted into typed states + validated transitions| Typed["Typed Workflow<br/>typed_agent_workflow.py"]
     ReAct + Evaluator -->|low-confidence surfacing + intervention points| HIL["Human-in-the-Loop<br/>human_in_loop.py"]
+    ReAct + Evaluator + Memory -->|specialists + critic + synthesis| Multi["Multi-Agent Debate<br/>multi_agent_debate.py"]
     ReAct & Memory -->|full integration example| Explainer
 
     %% Legend / notes
@@ -322,6 +323,7 @@ It uses `verbose=True` so you can see:
 | `synthetic_data_factory`     | `mini_react` + Evaluator + Predictor   | (data + optional training)     |
 | `typed_agent_workflow`       | `mini_react` + Predictor (typed lift)  | (typed safety layer)           |
 | `human_in_loop`              | `mini_react` + Evaluator               | (oversight / intervention)     |
+| `multi_agent_debate`         | `mini_react` + Evaluator + Memory      | (orchestrator + specialists)   |
 | `memory_explainer`           | `mini_react` + `memory` + `tiny...`    | (explainer)                    |
 
 

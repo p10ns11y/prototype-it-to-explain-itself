@@ -39,6 +39,7 @@ This matches the spirit of clear English that Orwell set out.
 - A **Synthetic Data Factory** (`synthetic_data_factory.py`) that generates trajectories, filters the good ones with self-critique, turns them into training data, and can actually improve the model. The "agent improves itself" flywheel made tiny and visible.
 - A **Typed Agent Workflow** (`typed_agent_workflow.py`) that models the ReAct loop with strict types and a state machine so many classes of invalid execution become impossible or explicitly rejected. Python illustration of reliability-by-construction (ideal in Rust).
 - A **Human-in-the-Loop Agent Desktop** (`human_in_loop.py`) (terminal edition) that surfaces low-confidence steps, lets a human approve/edit/inject, logs every intervention, and supports different autonomy modes. The supervision patterns production agents actually need.
+- A **Multi-Agent Debate / Collaboration** (`multi_agent_debate.py`) — the capstone. A tiny orchestrator spawns specialist agents, runs a critic round, and synthesizes a better answer. Composes every prior prototype through the Predictor seam.
 
 More prototypes will live in their own folders under this root. Each one will target one mechanism that is easy to use but hard to see.
 

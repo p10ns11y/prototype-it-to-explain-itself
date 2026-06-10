@@ -415,6 +415,25 @@ python llm/human_in_loop.py --mode run-then-review --question "..."
 
 In real life this would be a proper desktop app (Tauri, Textual, NiceGUI, etc.) with buttons, live previews of "what the agent is about to do", and persistent session storage. The patterns (low-confidence surfacing, explicit intervention points, audit logs, autonomy modes) are the same.
 
+## Multi-Agent Debate / Collaboration
+
+See `multi_agent_debate.py`.
+
+This is the final prototype in the original sequence — the capstone.
+
+A tiny orchestrator spawns 2–3 specialist agents for the same hard goal. The specialists are just differently configured versions of everything we built before (different backends via the Predictor, optional memory, typed lifting, etc.). They each produce a proposal. A critic (another Predictor call) scores them. A short debate/synthesis round produces a final answer that is usually better than any single specialist could have managed.
+
+Because every specialist and the critic only ever talk to a Predictor, you can later give some of them strong local models while the orchestrator stays on the tiny teaching brain — or any other combination.
+
+Run:
+
+```bash
+python llm/multi_agent_debate.py
+python llm/multi_agent_debate.py --goal "What is the true relationship between the crystals and the machine?" --agents 3
+```
+
+This pattern (multiple reasoners + critic + synthesis) is the same one used in production mixture-of-agents, self-consistency, and debate systems. Here it is completely visible, tiny, and built on top of the previous eight prototypes.
+
 ### Sequencing — What Comes Next
 
 We keep every new prototype small by adding **one** clear idea on top of what already exists:
@@ -427,6 +446,7 @@ We keep every new prototype small by adding **one** clear idea on top of what al
 6. **Synthetic Data Factory** (`synthetic_data_factory.py`) — generate many trajectories, self-critique + filter the good ones, turn them into training data, and (optionally) actually improve the model. Closes the "agent improves itself" loop. (Implemented)
 7. **Typed Agent Workflow** (`typed_agent_workflow.py`) — model the ReAct loop with strict types and an explicit state machine so many classes of invalid execution become impossible or loudly rejected. Python illustration of the "reliability by construction" idea (the real version belongs in Rust). (Implemented)
 8. **Human-in-the-Loop Agent Desktop** (`human_in_loop.py`) — terminal "desktop" that surfaces low-confidence steps, lets a human approve/edit/inject observations, logs every intervention, and supports different autonomy modes. Teaches the oversight patterns that real production agents need. (Implemented)
+9. **Multi-Agent Debate / Collaboration** (`multi_agent_debate.py`) — orchestrator spawns specialist agents (different backends/memory), lets them propose, runs a critic/judge round, and synthesizes a better answer. The capstone that composes everything previous through the Predictor seam. (Implemented)
 
 Later steps deliberately choose different languages/stacks when they teach the concept better and match real production usage (Rust for typed/verifiable workflows, GUI stacks for human oversight, mixed backends for local inference, etc.). The Predictor is the place where language boundaries become possible.
 
