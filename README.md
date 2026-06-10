@@ -41,9 +41,9 @@ This matches the spirit of clear English that Orwell set out.
 - A **Human-in-the-Loop Agent Desktop** (`human_in_loop.py`) (terminal edition) that surfaces low-confidence steps, lets a human approve/edit/inject, logs every intervention, and supports different autonomy modes. The supervision patterns production agents actually need.
 - A **Multi-Agent Debate / Collaboration** (`multi_agent_debate.py`) — the capstone. A tiny orchestrator spawns specialist agents, runs a critic round, and synthesizes a better answer. Composes every prior prototype through the Predictor seam.
 
-**Knowledge Hub** (hosted reference + active recall):
-- The single-file **[Knowledge Reflection & Tester](/knowledge-reflection-tester.html)** — high-quality conceptual questions + spaced repetition over the entire collection.
-- The **[Knowledge Reference Site](/site)** (Astro-powered) — polished, readable versions of the explainer documentation (`architecture.md`, `llm/README.md`, sampling strategies, roadmap, etc.) with Mermaid diagrams, tables, and "Practice this concept" links back into the tester.
+**Prove it that you learned it Hub** (hosted at Cloudflare Pages project `prototype-it-to-explain-itself`):
+- The single-file **[Reflect and Attempt Quizz](/reflect-and-attempt-quizz.html)** — high-quality conceptual questions + spaced repetition over the entire collection.
+- The **[Knowledge Reference Site](/site)** (Astro-powered, part of the same Pages project) — polished, readable versions of the explainer documentation (`architecture.md`, `llm/README.md`, sampling strategies, roadmap, etc.) with Mermaid diagrams, tables, and "Practice this concept" links back into the tester.
 
 More prototypes will live in their own folders under this root. Each one will target one mechanism that is easy to use but hard to see.
 
@@ -65,6 +65,8 @@ The gap between the toy and real systems becomes concrete instead of magical.
 5. Edit one constant, hyperparameter, or piece of the story. Run again.
 
 Do this a few times and the abstract claim turns into a felt fact.
+
+**Note on package manager:** This project (including the new `site/` Astro reference site and any future JS tooling) **always uses pnpm**. Use `pnpm install` / `pnpm dev` / `pnpm build` in the `site/` directory. See `site/README.md` and `site-deploy.md` for details.
 
 ## Future Direction
 
