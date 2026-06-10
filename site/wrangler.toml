@@ -1,0 +1,13 @@
+# Wrangler config for local Cloudflare Pages development of this Astro site.
+#
+# Run from inside the site/ directory:
+#   pnpm install
+#   pnpm build
+#   pnpm pages:dev
+#
+# For production, connect the GitHub repo in the Cloudflare dashboard
+# with Root directory = site (see site-deploy.md).
+
+name = "prototype-it-to-explain-itself"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "dist"

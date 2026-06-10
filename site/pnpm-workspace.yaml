@@ -1,0 +1,18 @@
+packages:
+  - '.'
+
+# pnpm 11 defaults to 1440 minutes (1 day). Opt out so CI/local installs
+# aren't blocked by same-day releases (e.g. astro@6.x).
+minimumReleaseAge: 2880
+
+## After  testing , need to remove these
+minimumReleaseAgeExclude:
+  - '@cloudflare/workerd-darwin-64@1.20260609.1'
+  - '@cloudflare/workerd-darwin-arm64@1.20260609.1'
+  - '@cloudflare/workerd-linux-64@1.20260609.1'
+  - '@cloudflare/workerd-linux-arm64@1.20260609.1'
+  - '@cloudflare/workerd-windows-64@1.20260609.1'
+  - astro@6.4.6
+  - miniflare@4.20260609.0
+  - workerd@1.20260609.1
+  - wrangler@4.99.0

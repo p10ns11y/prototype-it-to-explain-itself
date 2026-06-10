@@ -4,9 +4,12 @@ import '../styles/global.css';
 interface Props {
   title: string;
   description?: string;
+  frontmatter?: { title?: string; description?: string };
 }
 
-const { title, description } = Astro.props;
+const { title: propTitle, description: propDescription, frontmatter } = Astro.props;
+const title = frontmatter?.title ?? propTitle ?? 'Concept';
+const description = frontmatter?.description ?? propDescription;
 ---
 
 <!doctype html>
@@ -16,69 +19,42 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} • Prototype It To Explain Itself</title>
     {description && <meta name="description" content={description} />}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   </head>
-  <body class="bg-slate-950 text-slate-200">
+  <body class="bg-zinc-50 text-zinc-900">
     <div class="max-w-6xl mx-auto">
-      <header class="flex items-center justify-between px-8 pt-6 pb-4 border-b border-slate-800">
+      <header class="flex items-center justify-between px-8 pt-6 pb-4 border-b border-zinc-200 bg-white">
         <div class="flex items-center gap-x-3">
           <a href="/" class="flex items-center gap-x-3">
-            <div class="w-9 h-9 bg-blue-600 rounded-2xl flex items-center justify-center">
+            <div class="w-9 h-9 bg-zinc-900 rounded-2xl flex items-center justify-center">
               <i class="fa-solid fa-brain text-white"></i>
             </div>
             <div>
-              <span class="font-semibold tracking-tight">Prototype Knowledge Hub</span>
+              <span class="font-semibold tracking-tight text-zinc-900">Prove it that you learned it Hub</span>
             </div>
           </a>
         </div>
 
         <nav class="flex items-center gap-x-4 text-sm">
-          <a href="/" class="hover:text-blue-400 transition-colors">Tester</a>
-          <a href="/concepts" class="hover:text-blue-400 transition-colors">Concepts</a>
-          <a href="https://github.com/p10ns11y/prototype-it-to-explain-itself" target="_blank" class="hover:text-blue-400 transition-colors flex items-center gap-x-1">
+          <a href="/reflect-and-attempt-quizz.html" class="text-zinc-600 hover:text-zinc-900 transition-colors">Tester</a>
+          <a href="/concepts" class="text-zinc-600 hover:text-zinc-900 transition-colors">Concepts</a>
+          <a href="https://github.com/p10ns11y/prototype-it-to-explain-itself" target="_blank" class="text-zinc-600 hover:text-zinc-900 transition-colors flex items-center gap-x-1">
             <i class="fa-brands fa-github"></i>
             <span>GitHub</span>
           </a>
         </nav>
       </header>
 
-      <div class="px-8 py-8">
+      <div class="px-8 py-8 prose">
         <slot />
       </div>
 
-      <footer class="px-8 py-6 text-xs text-slate-500 border-t border-slate-800">
+      <footer class="px-8 py-6 text-xs text-zinc-500 border-t border-zinc-200">
         Built in the spirit of the project: small, visual, self-explanatory, and interconnected.
         The single-file tester at the root remains fully portable.
       </footer>
     </div>
-
-    <script>
-      // Minimal Mermaid client-side support for ```mermaid blocks
-      // In a real setup we would use a proper rehype plugin, but this works for v1.
-      document.addEventListener('DOMContentLoaded', async () => {
-        const blocks = document.querySelectorAll('pre code.language-mermaid, pre code.mermaid');
-        if (blocks.length === 0) return;
-
-        const { default: mermaid } = await import('https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs');
-        mermaid.initialize({ startOnLoad: false, theme: 'dark' });
-
-        blocks.forEach(async (block, i) => {
-          const id = `mermaid-${i}`;
-          const parent = block.parentElement;
-          if (!parent) return;
-
-          const source = block.textContent || '';
-          parent.outerHTML = `<div id="${id}" class="mermaid my-6"></div>`;
-
-          try {
-            const { svg } = await mermaid.render(id, source);
-            const container = document.getElementById(id);
-            if (container) container.innerHTML = svg;
-          } catch (e) {
-            console.error('Mermaid render failed', e);
-          }
-        });
-      });
-    </script>
+    <slot name="scripts" />
   </body>
 </html>

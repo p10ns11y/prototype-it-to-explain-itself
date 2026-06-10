@@ -1,0 +1,39 @@
+---
+import { getEntry, render } from 'astro:content';
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import PracticeCTA from '../../components/PracticeCTA.astro';
+import MermaidLoader from '../../components/MermaidLoader.astro';
+import { CONCEPT_PAGES } from '../../lib/concept-meta';
+
+export async function getStaticPaths() {
+  return CONCEPT_PAGES.map((meta) => ({
+    params: { slug: meta.slug },
+    props: { meta },
+  }));
+}
+
+interface Props {
+  meta: (typeof CONCEPT_PAGES)[number];
+}
+
+const { meta } = Astro.props;
+const entry = await getEntry('docs', meta.entryId);
+
+if (!entry) {
+  throw new Error(`Missing docs entry "${meta.entryId}". Check content.config.ts paths and concept-meta.ts.`);
+}
+
+const { Content } = await render(entry);
+---
+
+<DocsLayout title={meta.title} description={meta.description}>
+  <Content />
+
+  {
+    meta.practiceLinks?.map((link) => (
+      <PracticeCTA concept={link.concept} label={link.label} />
+    ))
+  }
+
+  <MermaidLoader slot="scripts" />
+</DocsLayout>

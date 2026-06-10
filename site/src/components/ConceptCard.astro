@@ -1,0 +1,17 @@
+---
+interface Props {
+  slug: string;
+  title: string;
+  description: string;
+}
+
+const { slug, title, description } = Astro.props;
+---
+
+<a
+  href={`/concepts/${slug}`}
+  class="block p-6 bg-white border border-zinc-200 rounded-3xl hover:border-zinc-300 transition-colors shadow-sm"
+>
+  <div class="font-semibold text-zinc-900">{title}</div>
+  <div class="text-sm text-zinc-600 mt-1">{description}</div>
+</a>

@@ -3,40 +3,181 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Inter', system_ui, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #fafafa;
+  color: #3f3f46;
 }
 
-.font-display {
-  font-family: 'Space Grotesk', 'Inter', system_ui, sans-serif;
-  font-weight: 600;
+/* 50 shades of white / very light grays for surfaces */
+.bg-surface {
+  background-color: #ffffff; /* pure white */
 }
 
-/* Make MD content nice and readable */
+.bg-surface-50 {
+  background-color: #fafafa; /* zinc-50 */
+}
+
+.bg-surface-100 {
+  background-color: #f4f4f5; /* zinc-100 */
+}
+
+.border-subtle {
+  border-color: #e4e4e7; /* zinc-200 */
+}
+
+/* 50 shades of gray for text hierarchy */
+.text-primary {
+  color: #18181b; /* zinc-900 - darkest gray for headings */
+}
+
+.text-secondary {
+  color: #3f3f46; /* zinc-700 */
+}
+
+.text-muted {
+  color: #71717a; /* zinc-500 */
+}
+
+/* Enhanced prose styles using 50 shades of white/gray for light elegant theme */
 .prose {
   max-width: 72ch;
+  line-height: 1.7;
+  color: #3f3f46; /* zinc-700 for body text */
 }
 
-.prose h1, .prose h2, .prose h3 {
+.prose h1, .prose h2, .prose h3, .prose h4 {
+  color: #18181b; /* zinc-900 for headings */
   scroll-margin-top: 4rem;
 }
 
-.prose table {
-  @apply border border-slate-700 text-sm;
+.prose h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
 }
 
-.prose th, .prose td {
-  @apply border border-slate-700 px-3 py-2;
+.prose h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
 }
 
-.prose pre {
-  @apply bg-slate-900 border border-slate-800 rounded-xl p-4 overflow-x-auto;
+.prose h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose p, .prose ul, .prose ol {
+  margin-bottom: 1rem;
+}
+
+.prose ul, .prose ol {
+  padding-left: 1.25rem;
+}
+
+.prose li {
+  margin-bottom: 0.25rem;
+}
+
+.prose blockquote {
+  border-left: 4px solid #a1a1aa; /* zinc-400 */
+  padding-left: 1rem;
+  margin: 1rem 0;
+  color: #52525b; /* zinc-600 */
+  font-style: italic;
 }
 
 .prose code {
-  @apply bg-slate-900 px-1.5 py-0.5 rounded;
+  background-color: #f4f4f5; /* zinc-100 */
+  color: #18181b;
+  padding: 0.1em 0.35em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
 }
 
-/* Mermaid container */
+.prose pre {
+  background-color: #f4f4f5; /* zinc-100 */
+  border: 1px solid #e4e4e7; /* zinc-200 */
+  border-radius: 0.75rem;
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  color: #18181b;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.9rem;
+}
+
+.prose th, .prose td {
+  border: 1px solid #d4d4d8; /* zinc-300 */
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.prose th {
+  background-color: #f4f4f5; /* zinc-100 */
+  font-weight: 600;
+  color: #18181b;
+}
+
+/* Mermaid diagrams - light theme friendly */
+.mermaid-host,
 .mermaid {
-  @apply bg-slate-900 border border-slate-800 rounded-2xl p-4 overflow-x-auto;
+  background-color: #ffffff;
+  border: 1px solid #e4e4e7; /* zinc-200 */
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+}
+
+.mermaid-host svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+
+/* CTAs use white and gray shades (per theme), with red variations allowed for emphasis/hover */
+a[href*="/reflect-and-attempt-quizz.html"] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: #ffffff; /* white */
+  color: #3f3f46; /* zinc-700 gray */
+  border: 1px solid #d4d4d8; /* zinc-300 */
+  border-radius: 0.75rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+a[href*="/reflect-and-attempt-quizz.html"]:hover {
+  background-color: #f4f4f5; /* zinc-100 */
+  border-color: #a1a1aa; /* zinc-400 */
+  color: #b91c1c; /* red-700 variation for emphasis */
+}
+
+/* Header specific for light 50-shades-white theme */
+header {
+  background-color: #ffffff;
+  border-bottom-color: #e4e4e7;
+}
+
+header a {
+  color: #52525b; /* zinc-600 */
+}
+
+header a:hover {
+  color: #18181b; /* zinc-900 */
 }

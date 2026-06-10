@@ -1,57 +1,84 @@
-# Deploying the Knowledge Hub to Cloudflare Pages
+# Deploying the Prove it that you learned it Hub to Cloudflare Pages
+
+> **Important:** This project **always uses pnpm** (see root README). Never use `npm` or `yarn` for the `site/` Astro project or any JS tooling.
 
 ## The two artifacts
 
-1. **Tester** — `knowledge-reflection-tester.html` (single file, zero build, fully portable).
-2. **Reference Site** — the Astro project in `site/` (renders the explainer .md files with Mermaid, nice typography, and "Practice" CTAs that link back to the tester).
+1. **Tester** — `reflect-and-attempt-quizz.html` (single file, zero build, fully portable).
+2. **Reference Site** — the Astro project in `site/` (renders monorepo markdown with Mermaid, typography, and Practice CTAs linking back to the tester).
 
-## Recommended Cloudflare Pages setup (monorepo style)
+## Recommended Cloudflare Pages setup (monorepo)
 
-Option A — Two separate Pages projects (simplest)
-- Project 1: point at the repo root, build command empty or a no-op, output directory left as-is or use a custom build that just copies the HTML. Or simply upload the single HTML directly.
-- Project 2: point the build at the `site/` directory (`cd site && npm ci && npm run build`), output directory `site/dist`.
+Connect the GitHub repo directly in the Cloudflare dashboard — no Workers adapter required (pure static output).
 
-Option B — Single unified project (recommended for nice URLs)
-- Build command (run from repo root):
-  ```bash
-  cd site && npm ci && npm run build
-  # Then copy the tester into the Astro output so both are served from one origin
-  cp ../knowledge-reflection-tester.html dist/
-  ```
-- Output directory: `site/dist`
-- The tester will be available at `/knowledge-reflection-tester.html` (or `/` if you rename it to `index.html` in the final output).
-- The Astro site will be at `/` (or move it under `/docs` by adjusting Astro config + the copy step).
+| Setting | Value |
+|---------|--------|
+| Root directory | `site` |
+| Build command | `pnpm install && pnpm build` |
+| Build output directory | `dist` |
+| Node version | `24` (matches `site/.node-version`) |
 
-## Local preview with wrangler
+### Content sources
+
+The site does **not** duplicate markdown under `site/`. It loads canonical files via the Astro content loader:
+
+- `llm/architecture.md` → `/concepts/llm-architecture`
+- `llm/README.md` → `/concepts/llm-readme`
+- `llm/sampling-strategies.md` → `/concepts/sampling-strategies`
+- `PROTOTYPE_ROADMAP.md` → `/concepts/prototype-roadmap`
+
+Routing metadata and Practice CTA links live in `site/src/lib/concept-meta.ts`.
+
+### Tester bundled with the site
+
+`prebuild` / `predev` copy `reflect-and-attempt-quizz.html` into `site/public/` before Astro builds, so it lands at the root of `dist/`:
+
+- Tester: `https://prototype-it-to-explain-itself.pages.dev/reflect-and-attempt-quizz.html`
+- Hub home: `https://prototype-it-to-explain-itself.pages.dev/`
+
+You can also deploy the tester as a separate static Pages project if you prefer.
+
+## Local preview
+
+**Day-to-day development (HMR):**
 
 ```bash
-# After building the Astro site
-wrangler pages dev site/dist
+cd site
+pnpm install
+pnpm dev
 ```
 
-You can also use the included `wrangler.toml` as a starting point.
+**Production-like static preview:**
 
-## Custom domains & caching
-
-- Use a custom domain for the whole hub.
-- Add a `_headers` file in the final dist for long-lived caching of the static tester and built docs assets.
-
-Example `_headers`:
-
-```
-/knowledge-reflection-tester.html
-  Cache-Control: public, max-age=3600
-
-/concepts/*
-  Cache-Control: public, max-age=3600
+```bash
+cd site
+pnpm build
+pnpm preview   # Astro static server
 ```
 
-## Future evolution
+**Cloudflare Pages emulation:**
 
-When the team is ready to move to a full TanStack (Router + Query) experience:
+```bash
+cd site
+pnpm pages:dev   # build + wrangler pages dev dist
+```
 
-- The MDX sources in `site/src/content` (or the real .md files) stay the same.
-- The `knowledgeItems` data structure from the tester can be reused as route data / loaders.
-- Cloudflare Pages + Functions (or Workers + Assets) remains an excellent target.
+Or deploy manually:
 
-The current setup deliberately keeps the "single portable HTML" experience while giving the reference documentation the rich renderer it deserves.
+```bash
+cd site
+pnpm deploy
+```
+
+## Caching
+
+`site/public/_headers` is copied into `dist/` and sets cache rules for Cloudflare Pages:
+
+- `/_astro/*` — long-lived immutable assets (hashed filenames)
+- `/concepts/*`, `/reflect-and-attempt-quizz.html`, and other HTML — 1 hour
+
+## Architecture notes
+
+- **Static only** — `output: 'static'` in `astro.config.mjs`; no `@astrojs/cloudflare` adapter or `_worker.js`.
+- **Mermaid** — loaded via dynamic import only on concept pages that contain ` ```mermaid ` blocks (~600 KB chunk, not on the home page).
+- **Wrangler config** — `site/wrangler.toml` is for local `wrangler pages dev`; production uses dashboard Git integration.

@@ -1,0 +1,45 @@
+---
+/** Lazy-loads Mermaid only on concept pages that render markdown diagrams. */
+---
+
+<script>
+  async function renderMermaidDiagrams() {
+    const hasDiagram = document.querySelector('pre[data-language="mermaid"]');
+    if (!hasDiagram) return;
+
+    const { default: mermaid } = await import('mermaid');
+    mermaid.initialize({ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' });
+
+    const blocks = document.querySelectorAll('pre[data-language="mermaid"]:not([data-rendered])');
+    for (const pre of blocks) {
+      pre.setAttribute('data-rendered', 'true');
+      const code = pre.querySelector('code');
+      const chart = (code ?? pre).textContent?.trim() ?? '';
+      if (!chart) continue;
+
+      const host = document.createElement('div');
+      host.className = 'mermaid-host not-prose my-6';
+      host.setAttribute('data-rendered', 'true');
+      pre.replaceWith(host);
+
+      const renderId = `mmd-${crypto.randomUUID().replace(/-/g, '')}`;
+      try {
+        const { svg } = await mermaid.render(renderId, chart);
+        host.innerHTML = svg;
+      } catch (err) {
+        console.error('Mermaid render failed', err);
+        const fallback = document.createElement('pre');
+        fallback.className =
+          'text-sm text-red-700 overflow-x-auto p-4 border border-red-200 rounded-xl bg-red-50';
+        fallback.textContent = chart;
+        host.replaceChildren(fallback);
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderMermaidDiagrams);
+  } else {
+    renderMermaidDiagrams();
+  }
+</script>

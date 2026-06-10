@@ -1,17 +1,25 @@
 import { defineConfig } from 'astro/config';
-import mdx from '@astrojs/mdx';
 import tailwind from '@astrojs/tailwind';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://prototype-knowledge.example.com', // update after real CF deploy
-  integrations: [mdx(), tailwind()],
+  site: 'https://prototype-it-to-explain-itself.pages.dev',
+  output: 'static',
+  integrations: [tailwind({ applyBaseStyles: false })],
   markdown: {
     shikiConfig: {
-      theme: 'github-dark',
+      theme: 'github-light',
     },
   },
-  // For now we keep content inside src/content/docs for a clean first version.
-  // Later this can be pointed at the real .md files from the monorepo root
-  // (or we can add a content sync step).
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules/mermaid')) return 'mermaid';
+          },
+        },
+      },
+    },
+  },
 });

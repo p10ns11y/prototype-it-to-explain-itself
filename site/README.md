@@ -1,35 +1,66 @@
-# site/ — Knowledge Reference Site (Astro + MDX)
+# site/ — Knowledge Reference Site (Astro)
 
-This is the Astro-powered reference documentation for the project.
+Static reference docs rendered from the monorepo markdown sources (`../llm/*.md`, `../PROTOTYPE_ROADMAP.md`).
+
+## Requirements
+
+- Node.js **24 LTS** (see `.node-version`, currently 24.16.0)
+- pnpm **11.5+** (see `packageManager` in `package.json`)
 
 ## Local development
 
 ```bash
 cd site
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
-## Build for Cloudflare Pages
+`predev` copies `reflect-and-attempt-quizz.html` into `public/` so the tester is available at `/reflect-and-attempt-quizz.html` during dev.
+
+## Build
 
 ```bash
-npm run build
+pnpm build
+pnpm preview   # Astro static preview
+# or
+pnpm pages:dev # Wrangler Pages emulation
 ```
 
-The output in `dist/` can be deployed directly.
+## Deploy to Cloudflare Pages
 
-## Unified deploy with the tester
+Connect the GitHub repo in the Cloudflare dashboard:
 
-The single-file `knowledge-reflection-tester.html` (at the monorepo root) is the portable experience.
+| Setting | Value |
+|---------|--------|
+| Root directory | `site` |
+| Build command | `pnpm install && pnpm build` |
+| Build output | `dist` |
+| Node version | `24` (`NODE_VERSION=24` or use `.node-version`) |
 
-For a unified Cloudflare Pages project you can:
+Or deploy manually from `site/`:
 
-1. Build this Astro site (`npm run build` inside `site/`).
-2. Copy `../knowledge-reflection-tester.html` into the `dist/` root (or a `/tester` subfolder).
-3. Deploy the combined `dist/`.
+```bash
+pnpm deploy
+```
 
-The tester links to `/concepts/...` and the concept pages contain "Practice" CTAs that link back to the tester with `?concept=...&review=1` (supported by the tester's URL param logic).
+See `../site-deploy.md` for full details.
 
-## Evolution path
+## Content sources
 
-This site (and the MDX sources) can later be absorbed into a TanStack Router + Query application with almost no content changes. The current setup is deliberately low-commitment while giving excellent reference pages today.
+Edit markdown in the repo — not duplicated under `site/`:
+
+| Source file | URL |
+|-------------|-----|
+| `llm/architecture.md` | `/concepts/llm-architecture` |
+| `llm/README.md` | `/concepts/llm-readme` |
+| `llm/sampling-strategies.md` | `/concepts/sampling-strategies` |
+| `PROTOTYPE_ROADMAP.md` | `/concepts/prototype-roadmap` |
+
+Routing and Practice CTA links are configured in `src/lib/concept-meta.ts`.  
+Glob loader paths are in `src/content.config.ts`.
+
+## Architecture notes
+
+- Pure static output (`output: 'static'`) — no Cloudflare adapter/worker required.
+- Mermaid (~600 KB) loads only on concept pages via dynamic import, not on the home page.
+- `public/_headers` sets cache rules for Cloudflare Pages.

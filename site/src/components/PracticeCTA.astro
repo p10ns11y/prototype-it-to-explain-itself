@@ -5,12 +5,12 @@ interface Props {
 }
 
 const { concept, label = "Test this concept with spaced repetition" } = Astro.props;
-const testerUrl = `/knowledge-reflection-tester.html?concept=${concept}&review=1`;
+const testerUrl = `/reflect-and-attempt-quizz.html?concept=${concept}&review=1`;
 ---
 
 <a
   href={testerUrl}
-  class="inline-flex items-center gap-x-2 mt-4 px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-500 rounded-2xl transition-colors"
+  class="inline-flex items-center gap-x-2 mt-4 px-4 py-2 text-sm font-medium bg-white border border-zinc-300 text-zinc-800 hover:bg-zinc-100 hover:border-zinc-400 rounded-2xl transition-colors"
 >
   {label} <i class="fa-solid fa-arrow-right"></i>
 </a>
