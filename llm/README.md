@@ -301,7 +301,7 @@ We keep every new prototype small by adding **one** clear idea on top of what al
 
 Later steps deliberately choose different languages/stacks when they teach the concept better and match real production usage (Rust for typed/verifiable workflows, GUI stacks for human oversight, mixed backends for local inference, etc.). The Predictor is the place where language boundaries become possible.
 
-See the todo list for the current status and the full prioritized sequence.
+See [PROTOTYPE_ROADMAP.md](../PROTOTYPE_ROADMAP.md) (full curated 9-idea list + concepts + table + current status) and the live todo list for the prioritized sequence.
 
 ## This Prototype Fits a Larger Pattern
 
