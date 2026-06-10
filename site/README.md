@@ -23,25 +23,25 @@ pnpm dev
 pnpm build
 pnpm preview   # Astro static preview
 # or
-pnpm pages:dev # Wrangler Pages emulation
+pnpm workers:dev # Cloudflare wrangler dev (after build)
 ```
 
-## Deploy to Cloudflare Pages
+## Deploy to Cloudflare
 
-Connect the GitHub repo in the Cloudflare dashboard:
+Cloudflare now uses **Workers static assets** (not a separate `pages.dev` toggle). Your live URL will be `*.workers.dev`.
 
 | Setting | Value |
 |---------|--------|
 | Root directory | `site` |
 | Build command | `pnpm install && pnpm build` |
 | Build output | `dist` |
-| Deploy command | *(empty — do not set)* |
-| Node version | `24` (`NODE_VERSION=24` or use `.node-version`) |
+| Deploy command | `npx wrangler deploy` |
+| Node version | `24` |
 
 Or deploy manually from `site/`:
 
 ```bash
-pnpm pages:deploy   # CLI only — do not put this in the Cloudflare build/deploy command
+pnpm deploy
 ```
 
 See `../site-deploy.md` for full details.
@@ -62,6 +62,6 @@ Glob loader paths are in `src/content.config.ts`.
 
 ## Architecture notes
 
-- Pure static output (`output: 'static'`) — no Cloudflare adapter/worker required.
+- Pure static output (`output: 'static'`) — assets-only Worker via `wrangler.toml` `[assets]`.
 - Mermaid (~600 KB) loads only on concept pages via dynamic import, not on the home page.
 - `public/_headers` sets cache rules for Cloudflare Pages.

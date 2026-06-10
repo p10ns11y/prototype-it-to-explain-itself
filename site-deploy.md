@@ -1,4 +1,4 @@
-# Deploying the Prove it that you learned it Hub to Cloudflare Pages
+# Deploying the Prove it that you learned it Hub to Cloudflare
 
 > **Important:** This project **always uses pnpm** (see root README). Never use `npm` or `yarn` for the `site/` Astro project or any JS tooling.
 
@@ -7,31 +7,48 @@
 1. **Tester** — `reflect-and-attempt-quizz.html` (single file, zero build, fully portable).
 2. **Reference Site** — the Astro project in `site/` (renders monorepo markdown with Mermaid, typography, and Practice CTAs linking back to the tester).
 
-## Recommended Cloudflare Pages setup (monorepo)
+## Cloudflare has merged Pages into Workers
 
-Connect the GitHub repo directly in the Cloudflare dashboard — no Workers adapter required (pure static output).
+There is **no separate “enable pages.dev” toggle** in the current dashboard. New Git-connected projects live under **Workers & Pages** and publish to:
+
+`https://<project-name>.<your-subdomain>.workers.dev/`
+
+(for example `https://prototype-it-to-explain-itself.sathyam-peram.workers.dev/`)
+
+Legacy Pages projects still use `*.pages.dev`. New projects use **`workers.dev`** — that is expected. See [Migrate from Pages to Workers](https://developers.cloudflare.com/workers/static-assets/migration-guides/migrate-from-pages/).
+
+This repo is configured for **Workers static assets** (no Worker script — just `dist/`).
+
+## Recommended dashboard setup (monorepo)
+
+**Workers & Pages → your project → Settings → Builds**
 
 | Setting | Value |
 |---------|--------|
 | Root directory | `site` |
 | Build command | `pnpm install && pnpm build` |
-| Build output directory | `dist` |
-| **Deploy command** | **Leave empty / disabled** |
+| Build output directory | `dist` *(optional cache hint; wrangler.toml is source of truth)* |
+| **Deploy command** | `npx wrangler deploy` |
 | Node version | `24` (matches `site/.node-version`) |
 
-### Do not run `wrangler deploy` in CI
+`site/wrangler.toml` points at static assets:
 
-If the build log shows `wrangler deploy` or asks for a Worker entry-point, the dashboard has a **Deploy command** set incorrectly. This project is **Cloudflare Pages (static)** — Pages publishes `dist/` automatically after the build.
-
-- **Correct:** build command only → `pnpm install && pnpm build`, output `dist`, no deploy command
-- **Wrong:** `wrangler deploy`, `npx wrangler deploy`, or `pnpm deploy` / `pnpm pages:deploy` in the build or deploy step
-
-Manual CLI upload (optional, not used by Git CI):
-
-```bash
-cd site
-pnpm pages:deploy   # runs wrangler pages deploy, not wrangler deploy
+```toml
+[assets]
+directory = "./dist"
 ```
+
+Wrangler uploads `dist/` on deploy. **Do not** use a no-op `echo` deploy — that skips uploading your Astro build.
+
+### Remove the default “Hello world” Worker
+
+If the live URL still shows **Hello world**, the project still has a placeholder Worker script from creation. In the dashboard:
+
+1. Open the project → **Settings** → check for a Worker entrypoint / `main` script.
+2. Remove it, or ensure deploy uses only `wrangler.toml` (assets-only, no `main` field).
+3. Redeploy.
+
+With assets configured, `/` serves `dist/index.html` from your Astro build.
 
 ### Content sources
 
@@ -48,10 +65,8 @@ Routing metadata and Practice CTA links live in `site/src/lib/concept-meta.ts`.
 
 `prebuild` / `predev` copy `reflect-and-attempt-quizz.html` into `site/public/` before Astro builds, so it lands at the root of `dist/`:
 
-- Tester: `https://prototype-it-to-explain-itself.pages.dev/reflect-and-attempt-quizz.html`
-- Hub home: `https://prototype-it-to-explain-itself.pages.dev/`
-
-You can also deploy the tester as a separate static Pages project if you prefer.
+- Tester: `https://<project>.<account>.workers.dev/reflect-and-attempt-quizz.html`
+- Hub home: `https://<project>.<account>.workers.dev/`
 
 ## Local preview
 
@@ -71,29 +86,29 @@ pnpm build
 pnpm preview   # Astro static server
 ```
 
-**Cloudflare Pages emulation:**
+**Cloudflare runtime emulation:**
 
 ```bash
 cd site
-pnpm pages:dev   # build + wrangler pages dev dist
+pnpm workers:dev   # build + wrangler dev
 ```
 
-Or deploy manually:
+**Manual deploy from CLI:**
 
 ```bash
 cd site
-pnpm pages:deploy
+pnpm deploy   # build + wrangler deploy
 ```
 
 ## Caching
 
-`site/public/_headers` is copied into `dist/` and sets cache rules for Cloudflare Pages:
+`site/public/_headers` is copied into `dist/` and sets cache rules:
 
 - `/_astro/*` — long-lived immutable assets (hashed filenames)
 - `/concepts/*`, `/reflect-and-attempt-quizz.html`, and other HTML — 1 hour
 
 ## Architecture notes
 
-- **Static only** — `output: 'static'` in `astro.config.mjs`; no `@astrojs/cloudflare` adapter or `_worker.js`.
-- **Mermaid** — loaded via dynamic import only on concept pages that contain ` ```mermaid ` blocks (~600 KB chunk, not on the home page).
-- **Wrangler config** — `site/wrangler.toml` is for local `wrangler pages dev`; production uses dashboard Git integration.
+- **Static only** — `output: 'static'` in `astro.config.mjs`; no Worker script, no `@astrojs/cloudflare` adapter.
+- **Mermaid** — dynamic import only on concept pages with diagrams (~600 KB chunk, not on the home page).
+- **Wrangler** — `[assets] directory = "./dist"` in `site/wrangler.toml`.

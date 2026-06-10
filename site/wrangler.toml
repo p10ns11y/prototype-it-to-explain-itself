@@ -1,14 +1,15 @@
-# Wrangler config for local Cloudflare Pages development only.
-# Git-connected Pages CI should NOT run wrangler deploy — see site-deploy.md.
+# Cloudflare Workers static assets (Pages has merged into Workers).
+# Docs: https://developers.cloudflare.com/workers/static-assets/
 #
-# Run from inside the site/ directory:
-#   pnpm install
-#   pnpm build
-#   pnpm pages:dev
+# Git CI: build = pnpm install && pnpm build
+#         deploy = npx wrangler deploy
 #
-# Dashboard (Git): Root directory = site, build = pnpm install && pnpm build,
-# output = dist, deploy command = empty.
+# Local preview after build:
+#   pnpm build && wrangler dev
 
 name = "prototype-it-to-explain-itself"
 compatibility_date = "2025-01-01"
-pages_build_output_dir = "dist"
+workers_dev = true
+
+[assets]
+directory = "./dist"
