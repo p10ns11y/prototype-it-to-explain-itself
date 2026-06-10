@@ -9,6 +9,16 @@ The design follows a **layered, composable** approach:
 - Higher-level concepts (agent loop, memory, testing) are built on top by **composition**, not by modifying the base.
 - Everything is kept small and self-contained so the control flow is visible in one pass.
 
+**Mermaid diagram rules (enforced to avoid recurring GitHub render failures):**
+- Always start with `flowchart TD` (or LR when horizontal makes more sense).
+- Nodes that need `<br/>`, special chars, or long text: use `["text here"]` or `["multi<br/>line"]`.
+- **Edge labels containing `[`, `]`, `:`, or other punctuation must be double-quoted**:  
+  `-->|"Action: name[args]"|`  (not `-->|Action name[args]|`).
+- Keep `subgraph` and `classDef` usage minimal and only for the high-level overview. Per-module control flows stay as flat basic graphs.
+- No exotic shapes, unicode arrows, or heavy styling — GitHub's Mermaid renderer is fragile.
+
+These rules come from repeated pain fixing the exact same "SQS" / bracket-in-label parse errors.
+
 ## High-Level Overview: How Everything Is Connected
 
 This single diagram shows the full architecture and interconnections between all core modules.
@@ -173,11 +183,11 @@ flowchart TD
     Call --> Strip["Strip prompt prefix<br/>→ model_output"]
     Strip --> Parse["parse_action / parse_final"]
     Parse -->|Final Answer| Return["return final"]
-    Parse -->|Action name[args]| Exec["Execute tool fn"]
+    Parse -->|"Action: name[args]"| Exec["Execute tool fn"]
     Exec --> Obs["Observation result"]
     Obs --> Append["Append Thought + Action + Observation to trajectory"]
     Append --> Build
-    Parse -->|nothing| AppendThought["Append as Thought"]
+    Parse -->|no clear action| AppendThought["Append as Thought"]
     AppendThought --> Build
 ```
 
