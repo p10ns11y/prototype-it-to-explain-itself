@@ -3,18 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Knowledge Reflection & Tester • Prototype It To Explain Itself</title>
+    <title>Reflect and Attempt Quizz • Prototype It To Explain Itself</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        flag: {
+                            navy: '#001A44',
+                            blue: '#002868',
+                            'blue-mid': '#1C3F7A',
+                            'blue-light': '#B8C9E8',
+                            red: '#BF0A30',
+                            'red-dark': '#8B0723',
+                            'red-light': '#F5D0D6',
+                            white: '#FFFFFF',
+                            cream: '#F2F5FA',
+                        }
+                    }
+                }
+            }
+        };
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
         
         :root {
-            --primary: #3b82f6;
+            --flag-red: #BF0A30;
+            --flag-red-dark: #8B0723;
+            --flag-red-light: #F5D0D6;
+            --flag-blue: #002868;
+            --flag-blue-dark: #001A44;
+            --flag-blue-mid: #1C3F7A;
+            --flag-blue-light: #B8C9E8;
+            --flag-white: #FFFFFF;
+            --flag-cream: #F2F5FA;
+            --primary: var(--flag-red);
         }
         
         body {
             font-family: 'Inter', system_ui, sans-serif;
+            background-color: var(--flag-blue-dark);
+            color: var(--flag-white);
         }
         
         .font-display {
@@ -28,7 +60,7 @@
         
         .concept-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            box-shadow: 0 10px 15px -3px rgb(0 26 68 / 0.35), 0 4px 6px -4px rgb(0 26 68 / 0.25);
         }
 
         .review-card {
@@ -54,6 +86,11 @@
         .nav-tab {
             position: relative;
             transition: all 0.2s ease;
+            color: var(--flag-blue-light);
+        }
+
+        .nav-tab:hover {
+            color: var(--flag-white);
         }
         
         .nav-tab.active:after {
@@ -63,7 +100,7 @@
             left: 0;
             width: 100%;
             height: 2px;
-            background-color: #3b82f6;
+            background-color: var(--flag-red);
         }
 
         .rating-btn {
@@ -91,50 +128,69 @@
             border-radius: 9999px;
         }
 
-        .quality-1 { background-color: #fee2e2; color: #b91c1c; }
-        .quality-2 { background-color: #fef3c7; color: #92400e; }
-        .quality-3 { background-color: #dbeafe; color: #1e40af; }
-        .quality-4 { background-color: #d1fae5; color: #166534; }
+        .quality-1 { background-color: var(--flag-red-dark); color: var(--flag-red-light); }
+        .quality-2 { background-color: var(--flag-blue-mid); color: var(--flag-blue-light); }
+        .quality-3 { background-color: var(--flag-blue); color: var(--flag-white); }
+        .quality-4 { background-color: var(--flag-cream); color: var(--flag-blue); }
 
         .sr-card {
             min-height: 380px;
         }
 
         .explanation-box {
-            background-color: #f8fafc;
-            border-left: 4px solid #64748b;
+            background-color: var(--flag-cream);
+            border-left: 4px solid var(--flag-blue);
+            color: var(--flag-blue);
+        }
+
+        .explanation-box .text-flag-blue-light {
+            color: var(--flag-blue-mid) !important;
+        }
+
+        #explanation-text {
+            color: var(--flag-blue) !important;
         }
 
         .metric {
             font-variant-numeric: tabular-nums;
         }
+
+        /* Subtle stripe accent on header */
+        .flag-header-accent {
+            background: linear-gradient(
+                180deg,
+                var(--flag-blue) 0%,
+                var(--flag-blue-dark) 100%
+            );
+            border-bottom: 3px solid var(--flag-red);
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-200">
+<body class="bg-flag-navy text-flag-white">
     <div class="max-w-6xl mx-auto">
         <!-- Header -->
-        <div class="flex items-center justify-between px-8 pt-8 pb-6 border-b border-slate-800">
+        <div class="flex items-center justify-between px-8 pt-8 pb-6 border-b border-flag-red flag-header-accent">
             <div class="flex items-center gap-x-3">
-                <div class="w-11 h-11 bg-blue-600 rounded-2xl flex items-center justify-center">
+                <div class="w-11 h-11 bg-flag-red rounded-2xl flex items-center justify-center">
                     <i class="fa-solid fa-brain text-white text-3xl"></i>
                 </div>
                 <div>
-                    <h1 class="font-display text-3xl font-semibold tracking-tighter">Knowledge Reflection &amp; Tester</h1>
-                    <p class="text-sm text-slate-400 -mt-1">Prototype It To Explain Itself • Spaced Repetition</p>
+                    <h1 class="font-display text-3xl font-semibold tracking-tighter">Reflect and Attempt Quizz</h1>
+                    <p class="text-sm text-flag-blue-light -mt-1">Prototype It To Explain Itself • Spaced Repetition</p>
                 </div>
             </div>
             
             <div class="flex items-center gap-x-2 text-sm">
-                <div class="px-3 py-1.5 bg-slate-900 rounded-2xl flex items-center gap-x-2 text-xs border border-slate-800">
+                <div class="px-3 py-1.5 bg-flag-blue rounded-2xl flex items-center gap-x-2 text-xs border border-flag-blue-mid">
                     <div class="flex items-center gap-x-1.5">
-                        <i class="fa-solid fa-sync fa-sm text-emerald-400"></i>
+                        <i class="fa-solid fa-sync fa-sm text-flag-white"></i>
                         <span id="total-reviews" class="font-medium">0</span>
                     </div>
-                    <div class="text-slate-500">reviews</div>
+                    <div class="text-flag-blue-light">reviews</div>
                 </div>
                 
                 <button onclick="resetProgress()" 
-                        class="px-3 py-1.5 text-xs bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-2xl flex items-center gap-x-2 transition-colors">
+                        class="px-3 py-1.5 text-xs bg-flag-blue hover:bg-flag-blue-mid border border-flag-blue-mid rounded-2xl flex items-center gap-x-2 transition-colors">
                     <i class="fa-solid fa-undo fa-sm"></i>
                     <span>Reset</span>
                 </button>
@@ -143,14 +199,14 @@
 
         <!-- Navigation -->
         <div class="px-8 pt-6">
-            <div class="flex items-center gap-x-1 border-b border-slate-800">
+            <div class="flex items-center gap-x-1 border-b border-flag-blue-mid">
                 <button onclick="showSection('dashboard')" 
                         class="nav-tab px-5 py-3 text-sm font-medium flex items-center gap-x-2 active" id="tab-dashboard">
                     <i class="fa-solid fa-chart-line"></i>
                     <span>Dashboard</span>
                 </button>
                 <button onclick="startReviewSession()" 
-                        class="px-5 py-3 text-sm font-medium flex items-center gap-x-2 bg-blue-600 hover:bg-blue-500 transition-colors rounded-t-2xl text-white">
+                        class="px-5 py-3 text-sm font-medium flex items-center gap-x-2 bg-flag-red hover:bg-flag-red-dark transition-colors rounded-t-2xl text-white">
                     <i class="fa-solid fa-play"></i>
                     <span id="review-button-text">Review Due Items</span>
                 </button>
@@ -172,21 +228,21 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
                 <!-- Due Today -->
-                <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-6">
+                <div class="lg:col-span-5 bg-flag-blue border border-flag-blue-mid rounded-3xl p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <div class="text-sm font-medium text-slate-400">TODAY'S REVIEW</div>
+                            <div class="text-sm font-medium text-flag-blue-light">TODAY'S REVIEW</div>
                             <div class="text-6xl font-semibold tracking-tighter mt-1" id="due-count">0</div>
                         </div>
                         <div class="text-right">
-                            <i class="fa-solid fa-calendar-check text-4xl text-blue-400 opacity-75"></i>
+                            <i class="fa-solid fa-calendar-check text-4xl text-flag-blue-light opacity-75"></i>
                         </div>
                     </div>
                     
-                    <div class="text-sm text-slate-400 mb-4">items due for spaced repetition</div>
+                    <div class="text-sm text-flag-blue-light mb-4">items due for spaced repetition</div>
                     
                     <button onclick="startReviewSession()" 
-                            class="w-full py-3 bg-blue-600 hover:bg-blue-500 transition-all active:scale-[0.985] font-semibold rounded-2xl flex items-center justify-center gap-x-2">
+                            class="w-full py-3 bg-flag-red hover:bg-flag-red-dark transition-all active:scale-[0.985] font-semibold rounded-2xl flex items-center justify-center gap-x-2">
                         <i class="fa-solid fa-play"></i>
                         <span>Begin Review Session</span>
                     </button>
@@ -194,23 +250,23 @@
 
                 <!-- Quick Stats -->
                 <div class="lg:col-span-7 grid grid-cols-3 gap-3">
-                    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5">
-                        <div class="text-xs uppercase tracking-widest text-slate-500">Total Items</div>
+                    <div class="bg-flag-blue border border-flag-blue-mid rounded-3xl p-5">
+                        <div class="text-xs uppercase tracking-widest text-flag-blue-light">Total Items</div>
                         <div class="text-4xl font-semibold mt-2" id="total-items">0</div>
-                        <div class="text-emerald-400 text-xs mt-3 flex items-center gap-x-1">
+                        <div class="text-flag-white text-xs mt-3 flex items-center gap-x-1">
                             <i class="fa-solid fa-check-double"></i>
                             <span>High quality</span>
                         </div>
                     </div>
-                    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5">
-                        <div class="text-xs uppercase tracking-widest text-slate-500">Avg Ease</div>
+                    <div class="bg-flag-blue border border-flag-blue-mid rounded-3xl p-5">
+                        <div class="text-xs uppercase tracking-widest text-flag-blue-light">Avg Ease</div>
                         <div class="text-4xl font-semibold mt-2" id="avg-ease">—</div>
-                        <div class="text-xs mt-3 text-slate-400">Higher = better retention</div>
+                        <div class="text-xs mt-3 text-flag-blue-light">Higher = better retention</div>
                     </div>
-                    <div class="bg-slate-900 border border-slate-800 rounded-3xl p-5">
-                        <div class="text-xs uppercase tracking-widest text-slate-500">Reviewed Today</div>
+                    <div class="bg-flag-blue border border-flag-blue-mid rounded-3xl p-5">
+                        <div class="text-xs uppercase tracking-widest text-flag-blue-light">Reviewed Today</div>
                         <div class="text-4xl font-semibold mt-2" id="reviewed-today">0</div>
-                        <div class="text-xs mt-3 flex items-center gap-x-1 text-amber-400">
+                        <div class="text-xs mt-3 flex items-center gap-x-1 text-flag-red-light">
                             <i class="fa-solid fa-fire"></i>
                             <span id="streak-text">Keep the streak</span>
                         </div>
@@ -220,8 +276,8 @@
                 <!-- Categories Overview -->
                 <div class="lg:col-span-12">
                     <div class="flex items-center justify-between mb-3 px-1">
-                        <div class="text-sm font-semibold text-slate-300">Concepts by Category</div>
-                        <div class="text-xs text-slate-500">Click to filter library</div>
+                        <div class="text-sm font-semibold text-flag-cream">Concepts by Category</div>
+                        <div class="text-xs text-flag-blue-light">Click to filter library</div>
                     </div>
                     
                     <div id="category-pills" class="flex flex-wrap gap-2">
@@ -236,16 +292,16 @@
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <div class="text-xl font-semibold">Knowledge Library</div>
-                    <div class="text-sm text-slate-400">Browse all reflection prompts and test questions</div>
+                    <div class="text-sm text-flag-blue-light">Browse all reflection prompts and test questions</div>
                 </div>
                 
                 <div class="flex items-center gap-x-2">
                     <input type="text" id="search-input" placeholder="Search prompts..." 
-                           class="bg-slate-900 border border-slate-700 focus:border-slate-500 transition-colors px-4 py-2 text-sm rounded-2xl w-72 outline-none"
+                           class="bg-flag-blue border border-flag-blue-mid focus:border-flag-blue-light transition-colors px-4 py-2 text-sm rounded-2xl w-72 outline-none"
                            onkeyup="filterLibrary()">
                     
                     <select id="category-filter" onchange="filterLibrary()" 
-                            class="bg-slate-900 border border-slate-700 text-sm rounded-2xl px-3 py-2 outline-none">
+                            class="bg-flag-blue border border-flag-blue-mid text-sm rounded-2xl px-3 py-2 outline-none">
                         <option value="">All categories</option>
                     </select>
                 </div>
@@ -260,15 +316,15 @@
         <div id="section-stats" class="section px-8 py-8">
             <div class="max-w-4xl">
                 <div class="text-xl font-semibold mb-1">Mastery Overview</div>
-                <div class="text-slate-400 text-sm mb-6">Track retention strength across the core ideas of the project</div>
+                <div class="text-flag-blue-light text-sm mb-6">Track retention strength across the core ideas of the project</div>
                 
                 <div id="mastery-list" class="space-y-3">
                     <!-- Populated by JS -->
                 </div>
                 
-                <div class="mt-8 p-5 bg-slate-900 border border-slate-800 rounded-3xl text-sm">
-                    <div class="font-medium mb-2 text-slate-300">Spaced Repetition Notes</div>
-                    <ul class="space-y-2 text-slate-400 text-sm list-disc pl-5">
+                <div class="mt-8 p-5 bg-flag-blue border border-flag-blue-mid rounded-3xl text-sm">
+                    <div class="font-medium mb-2 text-flag-cream">Spaced Repetition Notes</div>
+                    <ul class="space-y-2 text-flag-blue-light text-sm list-disc pl-5">
                         <li>Items are scheduled using a simplified SM-2 style algorithm.</li>
                         <li>Rating <strong>Easy</strong> significantly increases the interval.</li>
                         <li>Rating <strong>Again</strong> or <strong>Hard</strong> resets the item close to today.</li>
@@ -280,17 +336,17 @@
     </div>
 
     <!-- REVIEW MODAL -->
-    <div id="review-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-3xl rounded-3xl overflow-hidden shadow-2xl">
+    <div id="review-modal" class="hidden fixed inset-0 bg-flag-navy/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div class="bg-flag-blue border border-flag-blue-mid w-full max-w-3xl rounded-3xl overflow-hidden shadow-2xl">
             
             <!-- Modal Header -->
-            <div class="px-6 pt-5 pb-3 flex items-center justify-between bg-slate-950 border-b border-slate-800">
+            <div class="px-6 pt-5 pb-3 flex items-center justify-between bg-flag-navy border-b border-flag-blue-mid">
                 <div class="flex items-center gap-x-3">
-                    <div class="text-sm font-medium px-3 py-1 bg-slate-800 rounded-full" id="review-progress">3 / 12</div>
-                    <div class="text-sm text-slate-400" id="review-category"></div>
+                    <div class="text-sm font-medium px-3 py-1 bg-flag-blue-mid rounded-full" id="review-progress">3 / 12</div>
+                    <div class="text-sm text-flag-blue-light" id="review-category"></div>
                 </div>
                 <button onclick="closeReviewModal()" 
-                        class="text-slate-400 hover:text-slate-200 px-3 py-1 text-sm flex items-center gap-x-1">
+                        class="text-flag-blue-light hover:text-flag-white px-3 py-1 text-sm flex items-center gap-x-1">
                     <i class="fa-solid fa-times"></i>
                     <span class="hidden sm:inline">End session</span>
                 </button>
@@ -299,7 +355,7 @@
             <div class="p-6">
                 <!-- Question / Prompt -->
                 <div class="mb-5">
-                    <div class="text-xs uppercase tracking-[1px] font-semibold text-blue-400 mb-2" id="item-type-badge"></div>
+                    <div class="text-xs uppercase tracking-[1px] font-semibold text-flag-blue-light mb-2" id="item-type-badge"></div>
                     <div id="current-prompt" class="text-2xl leading-tight font-medium text-balance"></div>
                 </div>
                 
@@ -311,13 +367,13 @@
                 <!-- Reflection textarea -->
                 <div id="reflection-container" class="hidden mb-6">
                     <textarea id="reflection-input" rows="5" placeholder="Write your reflection here..." 
-                              class="w-full bg-slate-950 border border-slate-700 focus:border-slate-500 rounded-2xl p-4 text-sm outline-none"></textarea>
+                              class="w-full bg-flag-navy border border-flag-blue-mid focus:border-flag-blue-light rounded-2xl p-4 text-sm outline-none"></textarea>
                 </div>
                 
                 <!-- Answer / Explanation (revealed) -->
                 <div id="explanation-panel" class="hidden mb-6 explanation-box rounded-2xl p-5">
-                    <div class="uppercase text-xs tracking-widest font-semibold text-slate-400 mb-2">Explanation / Model Answer</div>
-                    <div id="explanation-text" class="text-sm leading-relaxed text-slate-200"></div>
+                    <div class="uppercase text-xs tracking-widest font-semibold text-flag-blue-light mb-2">Explanation / Model Answer</div>
+                    <div id="explanation-text" class="text-sm leading-relaxed text-flag-white"></div>
                     
                     <div id="mcq-feedback" class="hidden mt-3 text-sm font-medium"></div>
                 </div>
@@ -327,7 +383,7 @@
                     <!-- Pre-reveal actions -->
                     <div id="pre-reveal-actions">
                         <button onclick="revealAnswer()" 
-                                class="w-full py-3.5 bg-white text-slate-900 hover:bg-slate-100 font-semibold rounded-2xl flex items-center justify-center gap-x-2 text-sm">
+                                class="w-full py-3.5 bg-flag-white text-flag-blue hover:bg-flag-cream font-semibold rounded-2xl flex items-center justify-center gap-x-2 text-sm">
                             <i class="fa-solid fa-eye"></i>
                             <span id="reveal-button-text">Reveal Explanation</span>
                         </button>
@@ -335,28 +391,28 @@
                     
                     <!-- Post-reveal rating -->
                     <div id="rating-section" class="hidden">
-                        <div class="text-center text-xs text-slate-400 mb-3 font-medium">How well did you understand / recall this?</div>
+                        <div class="text-center text-xs text-flag-blue-light mb-3 font-medium">How well did you understand / recall this?</div>
                         
                         <div class="grid grid-cols-4 gap-2">
-                            <button onclick="rateItem(1)" class="rating-btn py-3 px-2 text-xs font-medium bg-red-900/30 hover:bg-red-900/50 border border-red-800 text-red-300 rounded-2xl flex flex-col items-center">
+                            <button onclick="rateItem(1)" class="rating-btn py-3 px-2 text-xs font-medium bg-flag-red/30 hover:bg-flag-red/50 border border-flag-red-dark text-flag-red-light rounded-2xl flex flex-col items-center">
                                 <div>Again</div>
                                 <div class="text-[10px] opacity-60">1 day</div>
                             </button>
-                            <button onclick="rateItem(2)" class="rating-btn py-3 px-2 text-xs font-medium bg-amber-900/30 hover:bg-amber-900/50 border border-amber-800 text-amber-300 rounded-2xl flex flex-col items-center">
+                            <button onclick="rateItem(2)" class="rating-btn py-3 px-2 text-xs font-medium bg-flag-blue-mid/40 hover:bg-flag-blue-mid/60 border border-flag-blue text-flag-blue-light rounded-2xl flex flex-col items-center">
                                 <div>Hard</div>
                                 <div class="text-[10px] opacity-60">3 days</div>
                             </button>
-                            <button onclick="rateItem(3)" class="rating-btn py-3 px-2 text-xs font-medium bg-blue-900/30 hover:bg-blue-900/50 border border-blue-800 text-blue-300 rounded-2xl flex flex-col items-center">
+                            <button onclick="rateItem(3)" class="rating-btn py-3 px-2 text-xs font-medium bg-flag-blue/40 hover:bg-flag-blue/60 border border-flag-blue-mid text-flag-white rounded-2xl flex flex-col items-center">
                                 <div>Good</div>
                                 <div class="text-[10px] opacity-60">7 days</div>
                             </button>
-                            <button onclick="rateItem(4)" class="rating-btn py-3 px-2 text-xs font-medium bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-800 text-emerald-300 rounded-2xl flex flex-col items-center">
+                            <button onclick="rateItem(4)" class="rating-btn py-3 px-2 text-xs font-medium bg-flag-cream/20 hover:bg-flag-cream/30 border border-flag-white text-flag-white rounded-2xl flex flex-col items-center">
                                 <div>Easy</div>
                                 <div class="text-[10px] opacity-60">14+ days</div>
                             </button>
                         </div>
                         
-                        <div class="text-center text-[10px] text-slate-500 mt-3">Your rating updates the spaced repetition schedule</div>
+                        <div class="text-center text-[10px] text-flag-blue-light mt-3">Your rating updates the spaced repetition schedule</div>
                     </div>
                 </div>
             </div>
@@ -664,7 +720,7 @@
             // Streak text (very simple)
             const streakEl = document.getElementById('streak-text');
             if (state.globalStats.reviewedToday > 0) {
-                streakEl.innerHTML = `<span class="text-emerald-400">Great work today</span>`;
+                streakEl.innerHTML = `<span class="text-flag-white">Great work today</span>`;
             } else {
                 streakEl.textContent = 'Review something today';
             }
@@ -699,11 +755,11 @@
             Object.entries(categories).forEach(([cat, total]) => {
                 const due = dueMap[cat] || 0;
                 const pill = document.createElement('div');
-                pill.className = `px-4 py-1.5 rounded-2xl text-xs flex items-center gap-x-2 cursor-pointer border border-slate-700 hover:border-slate-500 transition-colors ${due > 0 ? 'bg-blue-950/40' : 'bg-slate-900'}`;
+                pill.className = `px-4 py-1.5 rounded-2xl text-xs flex items-center gap-x-2 cursor-pointer border border-flag-blue-mid hover:border-flag-blue-light transition-colors ${due > 0 ? 'bg-flag-red/20' : 'bg-flag-blue'}`;
                 pill.innerHTML = `
                     <span class="font-medium">${cat}</span>
-                    <span class="text-slate-400">(${total})</span>
-                    ${due > 0 ? `<span class="due-badge bg-blue-600 text-white text-[10px] px-1.5">${due} due</span>` : ''}
+                    <span class="text-flag-blue-light">(${total})</span>
+                    ${due > 0 ? `<span class="due-badge bg-flag-red text-flag-white text-[10px] px-1.5">${due} due</span>` : ''}
                 `;
                 pill.onclick = () => {
                     showSection('library');
@@ -721,7 +777,7 @@
             let itemsToShow = filteredItems || knowledgeItems;
             
             if (itemsToShow.length === 0) {
-                container.innerHTML = `<div class="col-span-full text-center py-8 text-slate-400">No items match your search.</div>`;
+                container.innerHTML = `<div class="col-span-full text-center py-8 text-flag-blue-light">No items match your search.</div>`;
                 return;
             }
             
@@ -731,13 +787,13 @@
                 const isDue = itemState && itemState.due <= getToday();
                 
                 const card = document.createElement('div');
-                card.className = `knowledge-item bg-slate-900 border border-slate-800 hover:border-slate-600 rounded-3xl p-5 cursor-pointer`;
+                card.className = `knowledge-item bg-flag-blue border border-flag-blue-mid hover:border-flag-blue-light rounded-3xl p-5 cursor-pointer`;
                 
                 let typeBadge = '';
                 if (item.type === 'mcq') {
-                    typeBadge = `<span class="concept-tag bg-violet-900/60 text-violet-300">MCQ Test</span>`;
+                    typeBadge = `<span class="concept-tag bg-flag-blue-mid/70 text-flag-blue-light">MCQ Test</span>`;
                 } else {
-                    typeBadge = `<span class="concept-tag bg-teal-900/60 text-teal-300">Reflection</span>`;
+                    typeBadge = `<span class="concept-tag bg-flag-red/30 text-flag-red-light">Reflection</span>`;
                 }
                 
                 card.innerHTML = `
@@ -745,7 +801,7 @@
                         <div class="flex-1">
                             <div class="flex items-center gap-x-2 mb-2">
                                 ${typeBadge}
-                                <span class="text-xs text-slate-500">${item.category}</span>
+                                <span class="text-xs text-flag-blue-light">${item.category}</span>
                             </div>
                             
                             <div class="font-medium leading-snug text-[15px] line-clamp-3">
@@ -753,13 +809,13 @@
                             </div>
                             
                             <div class="mt-4 flex items-center justify-between text-xs">
-                                <div class="flex items-center gap-x-1.5 text-slate-400">
+                                <div class="flex items-center gap-x-1.5 text-flag-blue-light">
                                     <span class="font-mono">${itemState ? itemState.interval : 0}d</span>
-                                    <span class="text-slate-600">•</span>
+                                    <span class="text-flag-blue-light/70">•</span>
                                     <span>Ease ${itemState ? itemState.ease.toFixed(1) : '2.5'}</span>
                                 </div>
                                 
-                                <div class="${isDue ? 'text-blue-400 font-medium' : 'text-slate-400'}">
+                                <div class="${isDue ? 'text-flag-red-light font-medium' : 'text-flag-blue-light'}">
                                     ${isDue ? 'Due today' : `Due ${due}`}
                                 </div>
                             </div>
@@ -768,7 +824,7 @@
                                 <a href="${getDocsLinkForConcept(item.id)}" 
                                    target="_blank"
                                    onclick="event.stopImmediatePropagation()"
-                                   class="text-[10px] text-blue-400 hover:text-blue-300 underline">
+                                   class="text-[10px] text-flag-blue-light hover:text-flag-blue-light underline">
                                     Read full explainer →
                                 </a>
                             </div>
@@ -827,7 +883,7 @@
             
             const typeBadge = document.getElementById('item-type-badge');
             typeBadge.textContent = item.type === 'mcq' ? 'MULTIPLE CHOICE' : 'REFLECTION PROMPT';
-            typeBadge.className = `text-xs uppercase tracking-[1px] font-semibold ${item.type === 'mcq' ? 'text-violet-400' : 'text-teal-400'} mb-2`;
+            typeBadge.className = `text-xs uppercase tracking-[1px] font-semibold ${item.type === 'mcq' ? 'text-flag-blue-light' : 'text-flag-white'} mb-2`;
             
             // Hide review-specific things
             document.getElementById('pre-reveal-actions').classList.add('hidden');
@@ -847,7 +903,7 @@
             if (item.type === 'mcq' && item.options) {
                 const feedback = document.getElementById('mcq-feedback');
                 feedback.classList.remove('hidden');
-                feedback.innerHTML = `<span class="text-emerald-400">Correct answer:</span> ${item.options.find(o => o.correct).text}`;
+                feedback.innerHTML = `<span class="text-flag-white">Correct answer:</span> ${item.options.find(o => o.correct).text}`;
             }
             
             // Add close button behavior override
@@ -894,7 +950,7 @@
             
             const typeBadge = document.getElementById('item-type-badge');
             typeBadge.textContent = currentItem.type === 'mcq' ? 'MULTIPLE CHOICE' : 'REFLECTION';
-            typeBadge.className = `text-xs uppercase tracking-[1px] font-semibold ${currentItem.type === 'mcq' ? 'text-violet-400' : 'text-teal-400'} mb-2`;
+            typeBadge.className = `text-xs uppercase tracking-[1px] font-semibold ${currentItem.type === 'mcq' ? 'text-flag-blue-light' : 'text-flag-white'} mb-2`;
             
             // Reset UI
             document.getElementById('pre-reveal-actions').classList.remove('hidden');
@@ -916,17 +972,17 @@
                 
                 currentItem.options.forEach((opt, idx) => {
                     const btn = document.createElement('button');
-                    btn.className = `w-full text-left p-4 border border-slate-700 hover:border-slate-500 rounded-2xl transition-colors flex items-start gap-x-3 text-sm ${currentItem._selected === idx ? 'border-blue-500 bg-blue-950/30' : ''}`;
+                    btn.className = `w-full text-left p-4 border border-flag-blue-mid hover:border-flag-blue-light rounded-2xl transition-colors flex items-start gap-x-3 text-sm ${currentItem._selected === idx ? 'border-flag-red bg-flag-red/20' : ''}`;
                     btn.innerHTML = `
-                        <div class="w-5 h-5 rounded-full border border-slate-500 flex-shrink-0 mt-0.5 flex items-center justify-center text-xs">
+                        <div class="w-5 h-5 rounded-full border border-flag-blue-light flex-shrink-0 mt-0.5 flex items-center justify-center text-xs">
                             ${String.fromCharCode(65 + idx)}
                         </div>
                         <div>${opt.text}</div>
                     `;
                     btn.onclick = () => {
                         // Deselect others
-                        Array.from(mcqContainer.children).forEach(c => c.classList.remove('border-blue-500', 'bg-blue-950/30'));
-                        btn.classList.add('border-blue-500', 'bg-blue-950/30');
+                        Array.from(mcqContainer.children).forEach(c => c.classList.remove('border-flag-red', 'bg-flag-red/20'));
+                        btn.classList.add('border-flag-red', 'bg-flag-red/20');
                         currentItem._selected = idx;
                     };
                     mcqContainer.appendChild(btn);
@@ -950,7 +1006,7 @@
             
             // Append a deep link to the full hosted explainer (works when deployed together with the site/)
             const explainerLink = getDocsLinkForConcept(currentItem.id);
-            const linkHtml = `<div class="mt-4 text-xs"><a href="${explainerLink}" target="_blank" class="text-blue-400 hover:text-blue-300 underline">Read the full explainer for this concept →</a></div>`;
+            const linkHtml = `<div class="mt-4 text-xs"><a href="${explainerLink}" target="_blank" class="text-flag-blue-light hover:text-flag-blue-light underline">Read the full explainer for this concept →</a></div>`;
             document.getElementById('explanation-text').insertAdjacentHTML('beforeend', linkHtml);
             
             // Handle MCQ feedback
@@ -962,11 +1018,11 @@
                 const correctIdx = currentItem.options.findIndex(o => o.correct);
                 
                 if (selectedIdx === undefined) {
-                    mcqFeedback.innerHTML = `<span class="text-amber-400">No answer selected.</span> Correct: <strong>${currentItem.options[correctIdx].text}</strong>`;
+                    mcqFeedback.innerHTML = `<span class="text-flag-red-light">No answer selected.</span> Correct: <strong>${currentItem.options[correctIdx].text}</strong>`;
                 } else if (selectedIdx === correctIdx) {
-                    mcqFeedback.innerHTML = `<span class="text-emerald-400">Correct!</span>`;
+                    mcqFeedback.innerHTML = `<span class="text-flag-white">Correct!</span>`;
                 } else {
-                    mcqFeedback.innerHTML = `<span class="text-red-400">Not quite.</span> Correct: <strong>${currentItem.options[correctIdx].text}</strong>`;
+                    mcqFeedback.innerHTML = `<span class="text-flag-red-light">Not quite.</span> Correct: <strong>${currentItem.options[correctIdx].text}</strong>`;
                 }
             } else {
                 mcqFeedback.classList.add('hidden');
@@ -1008,23 +1064,23 @@
             const modal = document.getElementById('review-modal');
             
             modal.innerHTML = `
-                <div class="bg-slate-900 border border-slate-700 w-full max-w-md rounded-3xl p-8 text-center">
-                    <div class="mx-auto w-14 h-14 bg-emerald-600 rounded-full flex items-center justify-center mb-5">
+                <div class="bg-flag-blue border border-flag-blue-mid w-full max-w-md rounded-3xl p-8 text-center">
+                    <div class="mx-auto w-14 h-14 bg-flag-red rounded-full flex items-center justify-center mb-5">
                         <i class="fa-solid fa-check text-white text-3xl"></i>
                     </div>
                     
                     <div class="text-2xl font-semibold">Session complete</div>
-                    <div class="text-slate-400 mt-1">You reviewed ${currentReviewItems.length} items.</div>
+                    <div class="text-flag-blue-light mt-1">You reviewed ${currentReviewItems.length} items.</div>
                     
-                    <div class="my-6 h-px bg-slate-800"></div>
+                    <div class="my-6 h-px bg-flag-blue-mid"></div>
                     
-                    <div class="text-sm text-slate-300">
+                    <div class="text-sm text-flag-cream">
                         Spaced repetition works best with consistency.<br>
                         Come back when new items become due.
                     </div>
                     
                     <button onclick="closeReviewModalAndRefresh()" 
-                            class="mt-6 w-full py-3 bg-white text-slate-900 font-semibold rounded-2xl text-sm">
+                            class="mt-6 w-full py-3 bg-flag-white text-flag-blue hover:bg-flag-cream font-semibold rounded-2xl text-sm">
                         Return to Dashboard
                     </button>
                 </div>
@@ -1106,7 +1162,7 @@
             document.getElementById('section-dashboard').classList.add('active');
             
             // Initial stats
-            console.log('%c[Knowledge Tester] App initialized with ' + knowledgeItems.length + ' high-quality items', 'color:#64748b');
+            console.log('%c[Knowledge Tester] App initialized with ' + knowledgeItems.length + ' high-quality items', 'color:#B8C9E8');
         }
         
         // Boot the app
@@ -1115,9 +1171,9 @@
         // ============================================
         // INTEGRATION HELPERS (for future docs site + URL deep links)
         // ============================================
-        const DOCS_BASE = '/concepts'; // Will be produced by the Astro site in /site/
-                                       // When opened as a lone file this can be overridden
-                                       // or fall back to GitHub rendered versions.
+        const DOCS_BASE = '/concepts'; // Served from the Cloudflare Pages project "prototype-it-to-explain-itself"
+                                       // (built from the `site/` Astro app). When opened as a lone file
+                                       // this can be overridden or fall back to GitHub rendered versions.
 
         function getDocsLinkForConcept(conceptId) {
             // Map concept ids to nice doc paths. For now we use a simple convention.
