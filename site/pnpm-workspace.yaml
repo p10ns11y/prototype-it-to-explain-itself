@@ -1,6 +1,12 @@
 packages:
   - '.'
 
+# pnpm 11 blocks postinstall scripts unless explicitly allowed (strictDepBuilds).
+allowBuilds:
+  esbuild: true
+  sharp: true
+  workerd: true
+
 # pnpm 11 defaults to 1440 minutes (1 day). Opt out so CI/local installs
 # aren't blocked by same-day releases (e.g. astro@6.x).
 minimumReleaseAge: 2880
