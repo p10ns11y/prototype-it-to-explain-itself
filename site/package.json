@@ -14,7 +14,7 @@
     "prebuild": "mkdir -p public && cp ../reflect-and-attempt-quizz.html public/",
     "build": "astro build",
     "preview": "astro preview",
-    "deploy": "pnpm build && wrangler pages deploy dist --project-name prototype-it-to-explain-itself",
+    "pages:deploy": "pnpm build && wrangler pages deploy dist --project-name prototype-it-to-explain-itself",
     "pages:dev": "pnpm build && wrangler pages dev dist",
     "astro": "astro"
   },

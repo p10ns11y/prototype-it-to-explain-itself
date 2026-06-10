@@ -35,12 +35,13 @@ Connect the GitHub repo in the Cloudflare dashboard:
 | Root directory | `site` |
 | Build command | `pnpm install && pnpm build` |
 | Build output | `dist` |
+| Deploy command | *(empty — do not set)* |
 | Node version | `24` (`NODE_VERSION=24` or use `.node-version`) |
 
 Or deploy manually from `site/`:
 
 ```bash
-pnpm deploy
+pnpm pages:deploy   # CLI only — do not put this in the Cloudflare build/deploy command
 ```
 
 See `../site-deploy.md` for full details.

@@ -16,7 +16,22 @@ Connect the GitHub repo directly in the Cloudflare dashboard — no Workers adap
 | Root directory | `site` |
 | Build command | `pnpm install && pnpm build` |
 | Build output directory | `dist` |
+| **Deploy command** | **Leave empty / disabled** |
 | Node version | `24` (matches `site/.node-version`) |
+
+### Do not run `wrangler deploy` in CI
+
+If the build log shows `wrangler deploy` or asks for a Worker entry-point, the dashboard has a **Deploy command** set incorrectly. This project is **Cloudflare Pages (static)** — Pages publishes `dist/` automatically after the build.
+
+- **Correct:** build command only → `pnpm install && pnpm build`, output `dist`, no deploy command
+- **Wrong:** `wrangler deploy`, `npx wrangler deploy`, or `pnpm deploy` / `pnpm pages:deploy` in the build or deploy step
+
+Manual CLI upload (optional, not used by Git CI):
+
+```bash
+cd site
+pnpm pages:deploy   # runs wrangler pages deploy, not wrangler deploy
+```
 
 ### Content sources
 
@@ -67,7 +82,7 @@ Or deploy manually:
 
 ```bash
 cd site
-pnpm deploy
+pnpm pages:deploy
 ```
 
 ## Caching
