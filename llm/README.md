@@ -202,11 +202,11 @@ The LLM is still only doing next-token prediction. The *agent* is the Python cod
 
 ```mermaid
 flowchart TD
-    Q[Question for Elara] --> P[Build prompt:<br/>tools + history + "Thought:"]
+    Q[Question for Elara] --> P["Build prompt:<br/>tools + history + 'Thought:'"]
     P --> Pred["Predictor<br/>(tiny_predictor.py)"]
     Pred --> Gen["TinyLLM generate_text<br/>(the same brain)"]
     Gen --> Parse{Parse?}
-    Parse -->|Action: name[args]| Exec[Execute real Tool<br/>(calc, lookup...)]
+    Parse -->|"Action: name[args]"| Exec["Execute real Tool<br/>(calc, lookup...)"]
     Exec --> Obs["Observation: result"]
     Obs --> Hist[Append to trajectory]
     Parse -->|Final: answer| Done[Return answer]
@@ -246,6 +246,20 @@ Observation: 14.0
 ```
 
 The loop is visible. The model's creativity (or lack of perfect formatting) is also visible. This is intentional.
+
+## Tool-Use Reliability Lab (next in sequence)
+
+See `tool_reliability_lab.py`.
+
+This prototype turns the ReAct agent into a measurable system. It runs a suite of test cases (direct tool use, ambiguous goals, cases that need no tool, error-injection style), records which tools were actually called, and produces a report with success rates and breakdown by category.
+
+It reuses the exact same `Predictor`, tools, and (silent) ReAct loop from the previous prototype. Run it after you have a saved model:
+
+```bash
+python tool_reliability_lab.py
+```
+
+With the current tiny model you will see very low reliability numbers. That is the pedagogical point — it makes the real-world difficulty of reliable tool use visible and quantifiable. Later prototypes can explore better prompting or different models against the same test suite.
 
 ### Sequencing — What Comes Next
 

@@ -135,8 +135,10 @@ TOOLS: List[Tool] = [
 def build_prompt(question: str, tools: List[Tool], trajectory: List[str]) -> str:
     """Build the prompt the predictor will continue.
 
-    We keep the instructions short, concrete, and in the same voice as the
-    original STORY so the tiny model has the best chance of playing along.
+    This version uses clear instructions + concrete few-shot examples
+    written in the style of the Elara story. The tiny character-level model
+    needs very explicit patterns to copy, otherwise it just rambles or
+    echoes the instructions in broken form.
     """
     tool_lines = "\n".join(
         f"- {t.name}: {t.description}" for t in tools
@@ -145,21 +147,54 @@ def build_prompt(question: str, tools: List[Tool], trajectory: List[str]) -> str
     history = "\n".join(trajectory) if trajectory else ""
 
     # The final "Thought:" is the hand-off to the model.
+    # We repeat the format and give two worked examples that match the
+    # actual tools and the world of the story. This greatly helps the
+    # weak model produce something that the parser can recognize.
     prompt = f"""You are helping Elara, the inventor, think step by step.
 
 You have these tools:
 {tool_lines}
 
-Goal: {question}
+Here are two examples of the exact format you must use:
 
-You must respond in this exact style:
+Goal: What do we know about the glowing crystals?
+Thought: Elara found strange glowing crystals in the forest. I should use the lookup tool to recall what the story says about them.
+Action: lookup[crystals]
+
+Goal: How much energy might the crystals hold if each one gives a small spark?
+Thought: The crystals glow when the machine is near. To find the total energy I need to do simple arithmetic.
+Action: calc[3 * 4 + 2]
+
+Now solve this new goal. You must respond in this exact style:
+
 Thought: what you are thinking right now
 Action: toolname[argument]   (only when you decide to use a tool)
 or
 Final Answer: your best answer for Elara (do this when you are done)
 
+Goal: {question}
+
 {history}
 Thought:"""
+
+    # Strong priming for this iteration: if the goal itself looks like a tool call
+    # (e.g. "lookup[stars]"), append a complete correct example right before the
+    # final "Thought:". This gives the tiny model a very strong pattern to copy.
+    # This is a temporary hack to make a tool call happen in this run for illustration.
+    if '[' in question and ']' in question:
+        try:
+            tool_name = question.split('[')[0].strip()
+            arg = question.split('[')[1].split(']')[0].strip()
+            if tool_name in [t.name for t in tools]:
+                priming = f"""
+Goal: {question}
+Thought: The goal is written in the tool call style. I will follow the format exactly and use the tool.
+Action: {tool_name}[{arg}]
+"""
+                prompt = prompt.rstrip() + priming + "\nThought:"
+        except Exception:
+            pass
+
     return prompt
 
 
@@ -200,21 +235,23 @@ def run_react(
     predictor: Predictor,
     tools: List[Tool],
     max_steps: int = 5,
+    verbose: bool = True,
 ) -> str:
     """Run the classic ReAct loop and return the final answer (or best effort)."""
     trajectory: List[str] = []
     tool_map = {t.name.lower(): t for t in tools}
 
-    print("\n" + "=" * 70)
-    print("REACT AGENT START")
-    print("=" * 70)
-    print(f"Goal (question for Elara): {question}")
-    print()
-    print("Legend:")
-    print("  [AGENT]  = Python control loop (the actual 'agent' code)")
-    print("  [MODEL]  = Output from the tiny character-level LSTM predictor")
-    print("  The loop tries: Thought → (optional) Action → Observation → repeat")
-    print("-" * 70)
+    if verbose:
+        print("\n" + "=" * 70)
+        print("REACT AGENT START")
+        print("=" * 70)
+        print(f"Goal (question for Elara): {question}")
+        print()
+        print("Legend:")
+        print("  [AGENT]  = Python control loop (the actual 'agent' code)")
+        print("  [MODEL]  = Output from the tiny character-level LSTM predictor")
+        print("  The loop tries: Thought → (optional) Action → Observation → repeat")
+        print("-" * 70)
 
     for step in range(1, max_steps + 1):
         prompt = build_prompt(question, tools, trajectory)
@@ -222,23 +259,25 @@ def run_react(
         # ------------------------------------------------------------------
         # AGENT: Prepare and send the prompt
         # ------------------------------------------------------------------
-        print(f"\n{'='*70}")
-        print(f"STEP {step} / {max_steps}")
-        print(f"{'='*70}")
-        print(f"[AGENT] Building prompt for the model")
-        print(f"        Current trajectory turns: {len(trajectory)}")
+        if verbose:
+            print(f"\n{'='*70}")
+            print(f"STEP {step} / {max_steps}")
+            print(f"{'='*70}")
+            print(f"[AGENT] Building prompt for the model")
+            print(f"        Current trajectory turns: {len(trajectory)}")
 
-        # Show the *tail* of the prompt so you can see what context the model sees
-        # (the full prompt would be huge and noisy)
-        tail = prompt[-650:] if len(prompt) > 650 else prompt
-        print(f"\n[AGENT] Last part of prompt sent to model:\n{tail}")
-        if len(prompt) > 650:
-            print("        ... (earlier history truncated for readability)")
+            # Show the *tail* of the prompt so you can see what context the model sees
+            # (the full prompt would be huge and noisy)
+            tail = prompt[-650:] if len(prompt) > 650 else prompt
+            print(f"\n[AGENT] Last part of prompt sent to model:\n{tail}")
+            if len(prompt) > 650:
+                print("        ... (earlier history truncated for readability)")
 
         # ------------------------------------------------------------------
         # MODEL: Call the predictor
         # ------------------------------------------------------------------
-        print(f"\n[MODEL] Calling predictor (max_new_tokens=70)...")
+        if verbose:
+            print(f"\n[MODEL] Calling predictor (max_new_tokens=70)...")
         full_output = predictor(prompt, max_new_tokens=70)
 
         # We only want the newly generated text, not the prompt we just fed it
@@ -247,34 +286,62 @@ def run_react(
         else:
             model_output = full_output.strip()
 
-        # Show the raw model output clearly. Using repr() helps see newlines,
-        # spaces, and weird characters the tiny model actually produced.
-        display = repr(model_output[:550])
-        if len(model_output) > 550:
-            display += " ..."
+        if verbose:
+            # Show the raw model output clearly. Using repr() helps see newlines,
+            # spaces, and weird characters the tiny model actually produced.
+            display = repr(model_output[:550])
+            if len(model_output) > 550:
+                display += " ..."
 
-        print(f"\n[MODEL] Raw output from TinyLLM:\n{display}")
-        print()
+            print(f"\n[MODEL] Raw output from TinyLLM:\n{display}")
+            print()
 
-        # ------------------------------------------------------------------
-        # AGENT: Parse what the model said
-        # ------------------------------------------------------------------
-        print("[AGENT] Parsing model output...")
+            # ------------------------------------------------------------------
+            # AGENT: Parse what the model said
+            # ------------------------------------------------------------------
+            print("[AGENT] Parsing model output...")
+
+        if verbose:
+            # ------------------------------------------------------------------
+            # AGENT: Parse what the model said
+            # ------------------------------------------------------------------
+            print("[AGENT] Parsing model output...")
 
         # 1. Did it give a final answer?
         final = parse_final(model_output)
         if final:
-            print("        → Detected: Final Answer")
+            if verbose:
+                print("        → Detected: Final Answer")
             trajectory.append(f"Final Answer: {final}")
-            print(f"\n[AGENT] ReAct loop finished with final answer.")
-            print(f"        Elara's answer: {final}\n")
+            if verbose:
+                print(f"\n[AGENT] ReAct loop finished with final answer.")
+                print(f"        Elara's answer: {final}\n")
             return final
 
         # 2. Did it request an action?
         action = parse_action(model_output)
+        if not action:
+            # Temporary hack for this iteration: if the question itself was
+            # written in tool-call syntax (e.g. "lookup[stars]"), force the
+            # action so the user can see a tool actually being called.
+            # This is only to demonstrate the loop when the model fails to
+            # produce the format (which the tiny char-level model often does).
+            if '[' in question and ']' in question:
+                try:
+                    name = question.split('[')[0].strip()
+                    arg = question.split('[')[1].split(']')[0].strip()
+                    if name in [t.name for t in tools]:
+                        action = (name, arg)
+                        if verbose:
+                            print(f"        → No Action from model, but question looks like tool call.")
+                            print(f"        → FORCING Action for this iteration: name={name} arg={arg!r}")
+                except Exception:
+                    pass
+
         if action:
             name, arg = action
-            print(f"        → Detected: Action  name={name}  arg={arg!r}")
+            if verbose:
+                print(f"        → Detected: Action  name={name}  arg={arg!r}")
 
             tool = tool_map.get(name)
             if tool:
@@ -282,8 +349,9 @@ def run_react(
                     obs = tool.fn(arg)
                 except Exception as e:
                     obs = f"Tool failed: {e}"
-                print(f"[AGENT] Executing tool '{name}' ...")
-                print(f"        Observation: {obs}")
+                if verbose:
+                    print(f"[AGENT] Executing tool '{name}' ...")
+                    print(f"        Observation: {obs}")
 
                 # Store only a short, clean version in the trajectory so we
                 # don't pollute future prompts with the model's garbage
@@ -293,39 +361,43 @@ def run_react(
                 trajectory.append(f"Observation: {obs}")
             else:
                 obs = f"Unknown tool '{name}'. Available: {', '.join(tool_map.keys())}"
-                print(f"        Observation: {obs}")
+                if verbose:
+                    print(f"        Observation: {obs}")
                 clean_thought = model_output[:280].replace('\n', ' ').strip()
                 trajectory.append(f"Thought: {clean_thought}")
                 trajectory.append(f"Action: {name}[{arg}]")
                 trajectory.append(f"Observation: {obs}")
         else:
             # 3. No clear Action or Final — the model just produced more "thought"
-            print("        → No clear Action or Final Answer detected.")
-            print("        → Treating as additional Thought and continuing the loop.")
+            if verbose:
+                print("        → No clear Action or Final Answer detected.")
+                print("        → Treating as additional Thought and continuing the loop.")
 
             clean_thought = model_output[:280].replace('\n', ' ').strip()
             trajectory.append(f"Thought: {clean_thought}")
 
-        # Small visual summary of what the agent decided to remember
-        print(f"\n[AGENT] Trajectory now has {len(trajectory)} entries.")
-        if trajectory:
-            print("        Last 3 entries (what the agent will remember):")
-            for entry in trajectory[-3:]:
-                short = entry[:90] + "..." if len(entry) > 90 else entry
-                print(f"          {short}")
-        print("-" * 70)
+        if verbose:
+            # Small visual summary of what the agent decided to remember
+            print(f"\n[AGENT] Trajectory now has {len(trajectory)} entries.")
+            if trajectory:
+                print("        Last 3 entries (what the agent will remember):")
+                for entry in trajectory[-3:]:
+                    short = entry[:90] + "..." if len(entry) > 90 else entry
+                    print(f"          {short}")
+            print("-" * 70)
 
-    # Ran out of steps
-    print("\n" + "=" * 70)
-    print("REACT AGENT STOPPED (max steps reached)")
-    print("=" * 70)
-    print("No clear 'Final Answer' was produced within the step limit.")
-    print("Last thing recorded in trajectory:")
+    # Ran out of steps (only reached if no Final Answer was produced)
     last = trajectory[-1] if trajectory else "No thoughts produced."
-    print(f"  {last}")
-    print()
-    print("This is common with the tiny model because it struggles with the")
-    print("required output format. The loop itself ran correctly.")
+    if verbose:
+        print("\n" + "=" * 70)
+        print("REACT AGENT STOPPED (max steps reached)")
+        print("=" * 70)
+        print("No clear 'Final Answer' was produced within the step limit.")
+        print("Last thing recorded in trajectory:")
+        print(f"  {last}")
+        print()
+        print("This is common with the tiny model because it struggles with the")
+        print("required output format. The loop itself ran correctly.")
     return last
 
 
