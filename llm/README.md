@@ -392,6 +392,29 @@ python llm/typed_agent_workflow.py
 python llm/typed_agent_workflow.py --backend stub-smart --question "calc[9*9]"
 ```
 
+## Human-in-the-Loop Agent Desktop
+
+See `human_in_loop.py`.
+
+This is the oversight prototype. It turns the agent from an autonomous black box into a supervised process.
+
+The terminal "desktop" lets you:
+- Run with different autonomy modes (manual, ask-on-low-confidence, run-then-review)
+- See low-confidence signals (long runs, poor judge scores, errors)
+- Approve, edit the final answer, inject observations, or abort
+- Get a full audit log of every human intervention with reasons
+
+It still only ever talks to a Predictor, so the same supervision UI works whether the brain is our tiny model or a future strong one.
+
+Run:
+
+```bash
+python llm/human_in_loop.py
+python llm/human_in_loop.py --mode run-then-review --question "..."
+```
+
+In real life this would be a proper desktop app (Tauri, Textual, NiceGUI, etc.) with buttons, live previews of "what the agent is about to do", and persistent session storage. The patterns (low-confidence surfacing, explicit intervention points, audit logs, autonomy modes) are the same.
+
 ### Sequencing — What Comes Next
 
 We keep every new prototype small by adding **one** clear idea on top of what already exists:
@@ -403,6 +426,7 @@ We keep every new prototype small by adding **one** clear idea on top of what al
 5. **Local Inference Playground** (`local_inference_playground.py`) — demonstrate that the entire agent stack only ever talks to a `Predictor`. Swap in stub "local" backends (or the real tiny one) and measure latency/quality while keeping ReAct, memory, and the evaluator 100% unchanged. (Implemented)
 6. **Synthetic Data Factory** (`synthetic_data_factory.py`) — generate many trajectories, self-critique + filter the good ones, turn them into training data, and (optionally) actually improve the model. Closes the "agent improves itself" loop. (Implemented)
 7. **Typed Agent Workflow** (`typed_agent_workflow.py`) — model the ReAct loop with strict types and an explicit state machine so many classes of invalid execution become impossible or loudly rejected. Python illustration of the "reliability by construction" idea (the real version belongs in Rust). (Implemented)
+8. **Human-in-the-Loop Agent Desktop** (`human_in_loop.py`) — terminal "desktop" that surfaces low-confidence steps, lets a human approve/edit/inject observations, logs every intervention, and supports different autonomy modes. Teaches the oversight patterns that real production agents need. (Implemented)
 
 Later steps deliberately choose different languages/stacks when they teach the concept better and match real production usage (Rust for typed/verifiable workflows, GUI stacks for human oversight, mixed backends for local inference, etc.). The Predictor is the place where language boundaries become possible.
 
