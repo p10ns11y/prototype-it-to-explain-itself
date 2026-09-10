@@ -42,12 +42,12 @@ This matches the spirit of clear English that Orwell set out.
 - A **Multi-Agent Debate / Collaboration** (`multi_agent_debate.py`) — the capstone. A tiny orchestrator spawns specialist agents, runs a critic round, and synthesizes a better answer. Composes every prior prototype through the Predictor seam.
 
 
-**Concept explainers** (`explainers/` → Knowledge Reference Site `/concepts`):
-- [Diffusion](explainers/diffusion.md) — generate by un-noising
-- [Computer vision](explainers/computer-vision.md) — see → structure
-- [Gaussian splatting](explainers/gaussian-splatting.md) — scene as glowing blobs
-- [Multimodal spine](explainers/multimodal-spine.md) — one world, many tongues
-- [NLP coherence and style](explainers/nlp-coherence-and-style.md) — how sentences form, why labs differ, how to ask for a voice
+**Domain concept pages** (parallel to `llm/` → Knowledge Reference Site `/concepts`):
+- [diffusion/](diffusion/README.md) — generate by un-noising
+- [computer-vision/](computer-vision/README.md) — see → structure
+- [gaussian-splatting/](gaussian-splatting/README.md) — scene as glowing blobs
+- [multimodal/](multimodal/README.md) — one world, many tongues
+- [nlp/](nlp/README.md) — how sentences form, why labs differ, how to ask for a voice
 
 **Prove it that you learned it Hub** (hosted at Cloudflare Pages project `prototype-it-to-explain-itself`):
 - The single-file **[Reflect and Attempt Quizz](/reflect-and-attempt-quizz.html)** — high-quality conceptual questions + spaced repetition over the entire collection.

@@ -73,14 +73,14 @@ export const CONCEPT_PAGES: ConceptPageMeta[] = [
     description: 'An explicit, editable 3D particle cloud you can walk around.',
   },
   {
-    entryId: 'multimodal-spine',
-    slug: 'multimodal-spine',
+    entryId: 'multimodal',
+    slug: 'multimodal',
     title: 'Multimodal Spine: One World, Many Tongues',
     description: 'See → bind → show across vision, language, diffusion, and splats.',
   },
   {
-    entryId: 'nlp-coherence-and-style',
-    slug: 'nlp-coherence-and-style',
+    entryId: 'nlp',
+    slug: 'nlp',
     title: 'NLP Coherence and Style',
     description: 'How LLMs form sentences, why labs sound different, and how to ask for a voice.',
     practiceLinks: [
