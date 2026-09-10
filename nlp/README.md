@@ -112,3 +112,28 @@ When tools run, style instructions still apply to the **final wording**, but fac
 The tiny LSTM in this repo already shows the core: **next-token prediction + sampling**. Production labs add scale, preference training, and product prompts. The mechanism you can hold in your head stays the same: each token is a bet on what should come next under this context.
 
 **See (read the prompt) → bind (latent/context) → show (decoded tokens) so the reply teaches the idea — or the voice — without a lecture about the model.**
+
+## Run
+
+| File | What it does |
+|------|----------------|
+| `style_sampler.py` | Bigram next-token loop with temperature + top-p; two corpora (`warm` / `terse`) |
+| `token_sampler.html` | Same decoding knobs in the browser (character bigram) |
+
+```bash
+# Decoding policy only — no torch, no training loop
+python nlp/style_sampler.py
+python nlp/style_sampler.py --corpus terse --prompt "State" --temp 0.4
+python nlp/style_sampler.py --compare-temp
+
+# Browser
+# Linux: xdg-open nlp/token_sampler.html
+```
+
+**Full train + generate (LSTM, embeddings, loss):** [`llm/simple_llm_prototype.py`](../llm/simple_llm_prototype.py) and [`llm/README.md`](../llm/README.md).
+
+## WHAT YOU JUST SAW
+
+Each token was chosen **left to right** from a distribution shaped by prior tokens. Temperature flattened or sharpened that distribution; top-p cut the long tail. Switch corpus (`warm` vs `terse`) and the same mechanism sounds different — style lives in the data and the decoding knobs, not a separate grammar engine.
+
+For the full loop (tokenize → embed → predict → sample → append), use the LSTM prototype in `llm/`.

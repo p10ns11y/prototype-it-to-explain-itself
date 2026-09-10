@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>2D Gaussian splat toy</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    canvas { border: 1px solid #ccc; cursor: crosshair; width: 100%; max-width: 480px; }
+    .row { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start; }
+    pre { background: #f4f4f4; padding: 0.75rem; font-size: 0.85rem; overflow-x: auto; }
+    label { display: block; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>2D Gaussian splats</h1>
+  <p>Each blob has position, radius, color, and opacity. Drag a blob. The image is alpha-blended splats on a grid — the same idea as 3DGS, flattened.</p>
+  <div class="row">
+    <canvas id="c" width="240" height="180"></canvas>
+    <div>
+      <label>Active blob: <select id="blobPick"></select></label>
+      <label>Radius <input type="range" id="radius" min="8" max="60" value="28" /></label>
+      <label>Opacity <input type="range" id="opacity" min="10" max="100" value="70" /></label>
+      <pre id="readout"></pre>
+    </div>
+  </div>
+  <script>
+    const W = 240, H = 180;
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const pick = document.getElementById('blobPick');
+    const radiusSl = document.getElementById('radius');
+    const opacitySl = document.getElementById('opacity');
+    const readout = document.getElementById('readout');
+
+    const blobs = [
+      { x: 70, y: 90, r: 32, color: [220, 80, 80], a: 0.75, id: 'red' },
+      { x: 150, y: 70, r: 28, color: [80, 160, 240], a: 0.65, id: 'blue' },
+      { x: 120, y: 130, r: 36, color: [90, 200, 120], a: 0.55, id: 'green' },
+    ];
+
+    blobs.forEach((b, i) => {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = b.id;
+      pick.appendChild(opt);
+    });
+
+    let active = 0;
+    let dragging = false;
+
+    function gaussian(d2, sigma2) {
+      return Math.exp(-0.5 * d2 / sigma2);
+    }
+
+    function render() {
+      const buf = new Float32Array(W * H * 4);
+      for (const b of blobs) {
+        const sigma2 = (b.r / 2.5) ** 2;
+        const r2 = (b.r * 1.5) ** 2;
+        const y0 = Math.max(0, Math.floor(b.y - b.r * 1.5));
+        const y1 = Math.min(H, Math.ceil(b.y + b.r * 1.5));
+        const x0 = Math.max(0, Math.floor(b.x - b.r * 1.5));
+        const x1 = Math.min(W, Math.ceil(b.x + b.r * 1.5));
+        for (let y = y0; y < y1; y++) {
+          for (let x = x0; x < x1; x++) {
+            const dx = x - b.x, dy = y - b.y;
+            const d2 = dx * dx + dy * dy;
+            if (d2 > r2) continue;
+            const w = b.a * gaussian(d2, sigma2);
+            const i = (y * W + x) * 4;
+            const srcA = w;
+            const dstA = buf[i + 3];
+            const outA = srcA + dstA * (1 - srcA);
+            if (outA < 1e-6) continue;
+            for (let c = 0; c < 3; c++) {
+              buf[i + c] = (b.color[c] * srcA + buf[i + c] * dstA * (1 - srcA)) / outA;
+            }
+            buf[i + 3] = outA;
+          }
+        }
+      }
+
+      const img = ctx.createImageData(W, H);
+      for (let i = 0; i < W * H; i++) {
+        const a = buf[i * 4 + 3];
+        img.data[i * 4] = buf[i * 4] * a + 20 * (1 - a);
+        img.data[i * 4 + 1] = buf[i * 4 + 1] * a + 22 * (1 - a);
+        img.data[i * 4 + 2] = buf[i * 4 + 2] * a + 28 * (1 - a);
+        img.data[i * 4 + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+
+      const b = blobs[active];
+      readout.textContent = JSON.stringify({
+        active: b.id,
+        position: { x: Math.round(b.x), y: Math.round(b.y) },
+        radius: Math.round(b.r),
+        opacity: b.a.toFixed(2),
+        note: 'NeRF queries a field along rays; splats are explicit particles you can move.',
+      }, null, 2);
+    }
+
+    function syncControls() {
+      const b = blobs[active];
+      radiusSl.value = b.r;
+      opacitySl.value = Math.round(b.a * 100);
+      pick.value = active;
+    }
+
+    pick.addEventListener('change', () => { active = Number(pick.value); syncControls(); render(); });
+    radiusSl.addEventListener('input', () => { blobs[active].r = Number(radiusSl.value); render(); });
+    opacitySl.addEventListener('input', () => { blobs[active].a = Number(opacitySl.value) / 100; render(); });
+
+    canvas.addEventListener('mousedown', (e) => {
+      dragging = true;
+      move(e);
+    });
+    canvas.addEventListener('mousemove', (e) => { if (dragging) move(e); });
+    window.addEventListener('mouseup', () => { dragging = false; });
+
+    function move(e) {
+      const rect = canvas.getBoundingClientRect();
+      const sx = W / rect.width, sy = H / rect.height;
+      blobs[active].x = (e.clientX - rect.left) * sx;
+      blobs[active].y = (e.clientY - rect.top) * sy;
+      render();
+    }
+
+    syncControls();
+    render();
+  </script>
+</body>
+</html>

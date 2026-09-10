@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Diffusion toy — noise → structure</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+    canvas { border: 1px solid #ccc; image-rendering: pixelated; width: 100%; max-width: 320px; }
+    label { display: block; margin: 0.75rem 0 0.25rem; }
+    button { margin-top: 0.75rem; margin-right: 0.5rem; }
+  </style>
+</head>
+<body>
+  <h1>Noise → structure (2D toy)</h1>
+  <p>Each step pulls pixels toward a hidden checker target. The network here is a cheat: it knows the target. Real diffusion learns that map from data.</p>
+  <canvas id="c" width="32" height="32"></canvas>
+  <label>Step <span id="stepLabel">0</span> / <span id="totalLabel">40</span></label>
+  <input type="range" id="slider" min="0" max="40" value="0" />
+  <div>
+    <button id="play">Play</button>
+    <button id="reset">Reset noise</button>
+  </div>
+  <script>
+    const SIZE = 32;
+    const STEPS = 40;
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+    const slider = document.getElementById('slider');
+    const stepLabel = document.getElementById('stepLabel');
+    document.getElementById('totalLabel').textContent = STEPS;
+
+    function target(x, y) {
+      const block = ((Math.floor(x / 4) + Math.floor(y / 4)) % 2) === 0;
+      return block ? 220 : 40;
+    }
+
+    function makeNoise() {
+      const buf = new Float32Array(SIZE * SIZE);
+      for (let i = 0; i < buf.length; i++) buf[i] = Math.random() * 255;
+      return buf;
+    }
+
+    let noise = makeNoise();
+    const history = [];
+
+    function denoiseStep(buf, t) {
+      const out = new Float32Array(buf.length);
+      const alpha = 1 - t;
+      for (let y = 0; y < SIZE; y++) {
+        for (let x = 0; x < SIZE; x++) {
+          const i = y * SIZE + x;
+          const tgt = target(x, y);
+          // Oracle "network": blend noisy state toward target as t falls
+          out[i] = alpha * buf[i] + (1 - alpha) * tgt;
+        }
+      }
+      return out;
+    }
+
+    function rebuildHistory() {
+      history.length = 0;
+      let cur = noise.slice();
+      history.push(cur.slice());
+      for (let s = 1; s <= STEPS; s++) {
+        const t = 1 - s / STEPS;
+        cur = denoiseStep(cur, t);
+        history.push(cur.slice());
+      }
+    }
+
+    function draw(step) {
+      const buf = history[step];
+      const img = ctx.createImageData(SIZE, SIZE);
+      for (let i = 0; i < buf.length; i++) {
+        const v = Math.max(0, Math.min(255, buf[i]));
+        img.data[i * 4] = v;
+        img.data[i * 4 + 1] = v;
+        img.data[i * 4 + 2] = v;
+        img.data[i * 4 + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+      stepLabel.textContent = step;
+      slider.value = step;
+    }
+
+    rebuildHistory();
+    draw(0);
+
+    slider.addEventListener('input', () => draw(Number(slider.value)));
+
+    let timer = null;
+    document.getElementById('play').addEventListener('click', () => {
+      if (timer) { clearInterval(timer); timer = null; return; }
+      let s = 0;
+      timer = setInterval(() => {
+        draw(s);
+        s++;
+        if (s > STEPS) { clearInterval(timer); timer = null; }
+      }, 120);
+    });
+
+    document.getElementById('reset').addEventListener('click', () => {
+      noise = makeNoise();
+      rebuildHistory();
+      draw(0);
+    });
+  </script>
+</body>
+</html>

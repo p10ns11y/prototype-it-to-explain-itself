@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Token sampler — temperature &amp; top-p</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 560px; margin: 2rem auto; padding: 0 1rem; }
+    label { display: block; margin: 0.5rem 0 0.25rem; }
+    output { display: block; margin-top: 1rem; padding: 0.75rem; background: #f6f6f6; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Next-token sampler (browser)</h1>
+  <p>Character bigram on a tiny corpus. Same decoding knobs as production LLMs — without the network.</p>
+  <label>Prompt <input id="prompt" value="Elara" size="28" /></label>
+  <label>Temperature <input type="range" id="temp" min="0.2" max="1.8" step="0.1" value="0.8" /> <span id="tempVal">0.8</span></label>
+  <label>Top-p <input type="range" id="topP" min="0.3" max="1" step="0.05" value="0.9" /> <span id="topPVal">0.9</span></label>
+  <button id="go">Sample</button>
+  <output id="out"></output>
+  <script>
+    const CORPUS = (
+      "Elara built a small machine. The machine whispered numbers. " +
+      "Elara listened and wrote each token down. The village watched in quiet wonder."
+    ).repeat(3);
+
+    function bigrams(text) {
+      const m = new Map();
+      for (let i = 0; i < text.length - 1; i++) {
+        const a = text[i], b = text[i + 1];
+        if (!m.has(a)) m.set(a, new Map());
+        m.get(a).set(b, (m.get(a).get(b) || 0) + 1);
+      }
+      return m;
+    }
+    const MODEL = bigrams(CORPUS);
+
+    function softmax(logits) {
+      const m = Math.max(...logits);
+      const ex = logits.map(x => Math.exp(x - m));
+      const s = ex.reduce((a, b) => a + b, 0);
+      return ex.map(e => e / s);
+    }
+
+    function sample(ctx, temp, topP) {
+      const bucket = MODEL.get(ctx);
+      if (!bucket) return '';
+      const entries = [...bucket.entries()];
+      const total = entries.reduce((a, [, c]) => a + c, 0);
+      let probs = entries.map(([, c]) => c / total);
+      probs = softmax(probs.map(p => Math.log(Math.max(p, 1e-9)) / temp));
+
+      const ranked = entries.map(([ch], i) => [probs[i], ch]).sort((a, b) => b[0] - a[0]);
+      let mass = 0, kept = [];
+      for (const [p, ch] of ranked) {
+        if (mass + p > topP && kept.length) break;
+        kept.push([p, ch]);
+        mass += p;
+      }
+      const s = kept.reduce((a, [p]) => a + p, 0);
+      let r = Math.random() * s, acc = 0;
+      for (const [p, ch] of kept) {
+        acc += p;
+        if (r <= acc) return ch;
+      }
+      return kept[kept.length - 1][1];
+    }
+
+    function generate(prompt, temp, topP, maxNew = 120) {
+      let s = prompt || 'E';
+      for (let i = 0; i < maxNew; i++) {
+        const nxt = sample(s[s.length - 1], temp, topP);
+        if (!nxt) break;
+        s += nxt;
+        if ('.!?'.includes(nxt) && s.length > 24) break;
+      }
+      return s;
+    }
+
+    const temp = document.getElementById('temp');
+    const topP = document.getElementById('topP');
+    const tempVal = document.getElementById('tempVal');
+    const topPVal = document.getElementById('topPVal');
+    temp.oninput = () => { tempVal.textContent = temp.value; };
+    topP.oninput = () => { topPVal.textContent = topP.value; };
+
+    document.getElementById('go').onclick = () => {
+      const t = Number(temp.value), p = Number(topP.value);
+      const text = generate(document.getElementById('prompt').value, t, p);
+      document.getElementById('out').textContent =
+        `temp=${t}  top-p=${p}\n\n${text}\n\n(For full LSTM train loop see llm/simple_llm_prototype.py)`;
+    };
+  </script>
+</body>
+</html>

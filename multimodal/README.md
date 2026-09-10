@@ -35,3 +35,21 @@ flowchart TD
 ## One sentence
 
 **See (CV) → bind (multimodal latent) → show (diffusion or splats) so the artifact teaches the idea without a lecture.**
+
+## Run
+
+| File | What it does |
+|------|----------------|
+| `shared_latent.py` | Fake vision encoder + question embedding in one 8-D space; dot-product retrieval |
+
+```bash
+python multimodal/shared_latent.py
+python multimodal/shared_latent.py --question "where is the window"
+python multimodal/shared_latent.py --question "what material is the chair"
+```
+
+## WHAT YOU JUST SAW
+
+Vision wrote a scene vector into a shared space. Language asked a question in that **same** space. A dot product picked the best-matching attribute — no separate pipeline per modality.
+
+That binding is what lets a caption steer a generator or a splat edit: different tongues, one latent room. The script is hand-wired so you can read every vector; production models learn the encoders from data.
