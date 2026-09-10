@@ -41,6 +41,14 @@ This matches the spirit of clear English that Orwell set out.
 - A **Human-in-the-Loop Agent Desktop** (`human_in_loop.py`) (terminal edition) that surfaces low-confidence steps, lets a human approve/edit/inject, logs every intervention, and supports different autonomy modes. The supervision patterns production agents actually need.
 - A **Multi-Agent Debate / Collaboration** (`multi_agent_debate.py`) — the capstone. A tiny orchestrator spawns specialist agents, runs a critic round, and synthesizes a better answer. Composes every prior prototype through the Predictor seam.
 
+
+**Concept explainers** (markdown → Knowledge Reference Site `/concepts`):
+- [Diffusion](llm/diffusion.md) — generate by un-noising
+- [Computer vision](llm/computer-vision.md) — see → structure
+- [Gaussian splatting](llm/gaussian-splatting.md) — scene as glowing blobs
+- [Multimodal spine](llm/multimodal-spine.md) — one world, many tongues
+- [NLP coherence and style](llm/nlp-coherence-and-style.md) — how sentences form, why labs differ, how to ask for a voice
+
 **Prove it that you learned it Hub** (hosted at Cloudflare Pages project `prototype-it-to-explain-itself`):
 - The single-file **[Reflect and Attempt Quizz](/reflect-and-attempt-quizz.html)** — high-quality conceptual questions + spaced repetition over the entire collection.
 - The **[Knowledge Reference Site](/site)** (Astro-powered, part of the same Pages project) — polished, readable versions of the explainer documentation (`architecture.md`, `llm/README.md`, sampling strategies, roadmap, etc.) with Mermaid diagrams, tables, and "Practice this concept" links back into the tester.

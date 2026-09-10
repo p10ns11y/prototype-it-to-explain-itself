@@ -54,4 +54,37 @@ export const CONCEPT_PAGES: ConceptPageMeta[] = [
       { concept: 'multi-agent-value', label: 'Why do multiple agents + a critic help on hard tasks?' },
     ],
   },
+  {
+    entryId: 'diffusion',
+    slug: 'diffusion',
+    title: 'Diffusion: Generate by Un-noising',
+    description: 'Noise → structure: the generative vision loop made visible.',
+  },
+  {
+    entryId: 'computer-vision',
+    slug: 'computer-vision',
+    title: 'Computer Vision: See → Structure',
+    description: 'Pixels become measurements about the world — not pretty pictures.',
+  },
+  {
+    entryId: 'gaussian-splatting',
+    slug: 'gaussian-splatting',
+    title: 'Gaussian Splatting: Scene as Glowing Blobs',
+    description: 'An explicit, editable 3D particle cloud you can walk around.',
+  },
+  {
+    entryId: 'multimodal-spine',
+    slug: 'multimodal-spine',
+    title: 'Multimodal Spine: One World, Many Tongues',
+    description: 'See → bind → show across vision, language, diffusion, and splats.',
+  },
+  {
+    entryId: 'nlp-coherence-and-style',
+    slug: 'nlp-coherence-and-style',
+    title: 'NLP Coherence and Style',
+    description: 'How LLMs form sentences, why labs sound different, and how to ask for a voice.',
+    practiceLinks: [
+      { concept: 'tiny-model-lesson', label: 'Connect this to the tiny next-token loop' },
+    ],
+  },
 ];
