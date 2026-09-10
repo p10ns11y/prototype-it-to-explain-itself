@@ -16,6 +16,8 @@ This prototype makes that loop visible and runnable.
 
 For a broader view of how all the modules (Predictor, ReAct, Memory, Reliability Lab, Trajectory Evaluator) fit together, see **[architecture.md](architecture.md)**.
 
+**Sibling domains** (same repo layout as this folder): [diffusion](../diffusion/README.md) · [computer-vision](../computer-vision/README.md) · [gaussian-splatting](../gaussian-splatting/README.md) · [multimodal](../multimodal/README.md) · [nlp](../nlp/README.md).
+
 The project also maintains a hosted **Reflect and Attempt Quizz** (`reflect-and-attempt-quizz.html`, spaced-repetition active recall) and a **Knowledge Reference Site** (rendered explainer docs with Mermaid) under the Cloudflare Pages project named `prototype-it-to-explain-itself`. Both live in the monorepo and are designed to be deployed together.
 
 **Rule:** After implementing any new prototype, the author must update the root README, this file (new section + sequencing), and `architecture.md`.
