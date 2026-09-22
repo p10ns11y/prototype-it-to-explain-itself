@@ -1,49 +1,52 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
-import BrainFlipCard from '../../components/BrainFlipCard.astro';
 import ConceptCard from '../../components/ConceptCard.astro';
-import { NN_BRAIN_MAPPINGS } from '../../lib/nn-brain-map';
+import { PATH } from '../../lab/brief';
 import { CONCEPT_PAGES } from '../../lib/concept-meta';
 ---
 
 <DocsLayout
-  title="Concepts"
-  description="Teaching analogies pairing neural-network architectures with brain-inspired metaphors, plus reference pages for every domain."
+  title="Reading"
+  description="What to read after each machine, for the foundation and for how the idea is used now."
 >
   <div class="not-prose">
-    <h1 class="text-3xl font-semibold mb-3 text-zinc-900">Neural networks ↔ teaching analogies</h1>
+    <h1 class="text-3xl font-semibold mb-3 text-zinc-900">Reading</h1>
     <p class="text-zinc-600 mb-8 max-w-2xl leading-relaxed">
-      Each card pairs an architecture with a brain-inspired metaphor for learning. Flip to compare
-      sides, then follow the links into the domain folders where the demos live.
+      Play the machine first. Then read one foundation and one current piece.
+      The links leave this site. The code for the toys stays in the repo.
     </p>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-12">
-      {NN_BRAIN_MAPPINGS.map((mapping) => (
-        <BrainFlipCard mapping={mapping} />
+    <div class="space-y-8 mb-12">
+      {PATH.map((stop) => (
+        <section>
+          <h2 class="text-2xl font-semibold text-zinc-900 mb-1">
+            <a href={`/#${stop.id}`} class="underline hover:text-zinc-700">{stop.name}</a>
+          </h2>
+          <p class="text-zinc-800 mb-3 max-w-2xl">{stop.hold}</p>
+          <ul class="space-y-3 max-w-2xl">
+            {stop.readings.map((reading) => (
+              <li>
+                <a href={reading.href} class="underline text-zinc-900 hover:text-zinc-600" target="_blank" rel="noopener noreferrer">
+                  {reading.title}
+                </a>
+                <p class="text-sm text-zinc-600 mt-0.5">
+                  {reading.kind === 'foundation' ? 'Foundation' : 'Right now'}. {reading.by}, {reading.year}. About {reading.minutes} minutes. {reading.why}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
       ))}
     </div>
 
-    <p class="text-xs text-zinc-400 mb-10">
-      Analogies inspired by public lecture framing. None of these pairings claim to describe how the brain actually works.
-    </p>
-
-    <h2 class="text-2xl font-semibold mb-4 text-zinc-900">Reference pages</h2>
+    <h2 class="text-2xl font-semibold mb-3 text-zinc-900">Notes from the repo</h2>
     <p class="text-sm text-zinc-600 mb-6 max-w-2xl">
-      Canonical Markdown from domain folders at the repo root — <code class="text-xs bg-zinc-100 px-1.5 py-0.5 rounded">llm/</code>,
-      <code class="text-xs bg-zinc-100 px-1.5 py-0.5 rounded">computer-vision/</code>,
-      <code class="text-xs bg-zinc-100 px-1.5 py-0.5 rounded">multimodal/</code>, and the rest.
+      Longer write-ups of the prototypes. The runnable code is still in the folders those pages name.
     </p>
-
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
       {CONCEPT_PAGES.map((page) => (
         <ConceptCard slug={page.slug} title={page.title} description={page.description} />
       ))}
-    </div>
-
-    <div class="text-sm text-zinc-600">
-      The single-file
-      <a href="/reflect-and-attempt-quizz.html" class="underline hover:text-zinc-900">Reflect and Attempt Quizz</a>
-      provides active recall over the same concepts.
     </div>
   </div>
 </DocsLayout>
