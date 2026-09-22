@@ -1,20 +1,49 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
+import BrainFlipCard from '../../components/BrainFlipCard.astro';
 import ConceptCard from '../../components/ConceptCard.astro';
+import { NN_BRAIN_MAPPINGS } from '../../lib/nn-brain-map';
 import { CONCEPT_PAGES } from '../../lib/concept-meta';
 ---
 
-<DocsLayout title="Concepts">
-  <h1 class="text-3xl font-semibold mb-6">All Reference Pages</h1>
+<DocsLayout
+  title="Concepts"
+  description="Teaching analogies pairing neural-network architectures with brain-inspired metaphors, plus reference pages for every domain."
+>
+  <div class="not-prose">
+    <h1 class="text-3xl font-semibold mb-3 text-zinc-900">Neural networks ↔ teaching analogies</h1>
+    <p class="text-zinc-600 mb-8 max-w-2xl leading-relaxed">
+      Each card pairs an architecture with a brain-inspired metaphor for learning. Flip to compare
+      sides, then follow the links into the domain folders where the demos live.
+    </p>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    {CONCEPT_PAGES.map((page) => (
-      <ConceptCard slug={page.slug} title={page.title} description={page.description} />
-    ))}
-  </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-12">
+      {NN_BRAIN_MAPPINGS.map((mapping) => (
+        <BrainFlipCard mapping={mapping} />
+      ))}
+    </div>
 
-  <div class="mt-8 text-sm text-zinc-600">
-    These pages render directly from the project's canonical Markdown sources in <code>llm/</code> and <code>PROTOTYPE_ROADMAP.md</code>.
-    The single-file <a href="/reflect-and-attempt-quizz.html" class="underline">Reflect and Attempt Quizz</a> provides active recall over the same concepts.
+    <p class="text-xs text-zinc-400 mb-10">
+      Analogies inspired by public lecture framing. None of these pairings claim to describe how the brain actually works.
+    </p>
+
+    <h2 class="text-2xl font-semibold mb-4 text-zinc-900">Reference pages</h2>
+    <p class="text-sm text-zinc-600 mb-6 max-w-2xl">
+      Canonical Markdown from domain folders at the repo root — <code class="text-xs bg-zinc-100 px-1.5 py-0.5 rounded">llm/</code>,
+      <code class="text-xs bg-zinc-100 px-1.5 py-0.5 rounded">computer-vision/</code>,
+      <code class="text-xs bg-zinc-100 px-1.5 py-0.5 rounded">multimodal/</code>, and the rest.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      {CONCEPT_PAGES.map((page) => (
+        <ConceptCard slug={page.slug} title={page.title} description={page.description} />
+      ))}
+    </div>
+
+    <div class="text-sm text-zinc-600">
+      The single-file
+      <a href="/reflect-and-attempt-quizz.html" class="underline hover:text-zinc-900">Reflect and Attempt Quizz</a>
+      provides active recall over the same concepts.
+    </div>
   </div>
 </DocsLayout>
