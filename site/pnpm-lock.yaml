@@ -21,6 +21,15 @@ importers:
         specifier: ^3.4.0
         version: 3.4.19(yaml@2.9.0)
     devDependencies:
+      '@fontsource/outfit':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/spectral':
+        specifier: ^5.3.0
+        version: 5.3.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
       wrangler:
         specifier: ^4.99.0
         version: 4.99.0
@@ -453,6 +462,12 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@fontsource/outfit@5.3.0':
+    resolution: {integrity: sha512-0AVHzTTVJSxWDOxPKSfMeHhZeBFDU3cmgrcOb76ZEyhGo0+xgyG3GsLF3h9+X8w0IX7G4jzjJgFQEBiWdX6VgA==}
+
+  '@fontsource/spectral@5.3.0':
+    resolution: {integrity: sha512-2TL5WWGOZj4SIsBmPFEzKeA60tXXd1Qp1OqaaVEWkJL8IfSGLk6YmiusmC441iFkdJDIuFelu1r8lhCmQUU3mw==}
 
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
@@ -2172,6 +2187,11 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
   ufo@1.6.4:
     resolution: {integrity: sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==}
 
@@ -2701,6 +2721,10 @@ snapshots:
 
   '@esbuild/win32-x64@0.27.7':
     optional: true
+
+  '@fontsource/outfit@5.3.0': {}
+
+  '@fontsource/spectral@5.3.0': {}
 
   '@iconify/types@2.0.0': {}
 
@@ -4774,6 +4798,8 @@ snapshots:
 
   tslib@2.8.1:
     optional: true
+
+  typescript@5.9.3: {}
 
   ufo@1.6.4: {}
 
