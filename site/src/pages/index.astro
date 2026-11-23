@@ -1,64 +1,14 @@
 ---
-import DocsLayout from '../layouts/DocsLayout.astro';
-import BrainFlipCard from '../components/BrainFlipCard.astro';
-import { NN_BRAIN_MAPPINGS } from '../lib/nn-brain-map';
+import LabLayout from '../layouts/LabLayout.astro';
 ---
 
-<DocsLayout
-  title="Prototype It To Explain Itself"
-  description="Teaching analogies that pair neural-network architectures with brain-inspired metaphors. Flip the cards to compare sides."
->
-  <div class="max-w-4xl not-prose">
-    <h1 class="text-4xl font-semibold tracking-tight mb-4 text-zinc-900">
-      Different networks, different teaching analogies
-    </h1>
+<LabLayout>
+  <div id="workshop"></div>
+</LabLayout>
 
-    <p class="text-lg text-zinc-600 leading-relaxed mb-3">
-      A convolutional net does not do what a transformer does. Each architecture is built for a
-      different kind of input and a different kind of output. To make that stick, each card pairs
-      the network with a <strong class="font-medium text-zinc-800">brain-inspired metaphor</strong>
-      — a teaching aid, not a biology lesson.
-    </p>
+<script>
+  import { boot } from '../lab/boot';
 
-    <p class="text-lg text-zinc-600 leading-relaxed mb-8">
-      Tap a card to flip between the <strong class="font-medium text-zinc-800">network side</strong>
-      and the <strong class="font-medium text-zinc-800">analogy side</strong>. Multimodal systems
-      stitch several of these together — vision here, language there — because no single network
-      covers every data type.
-    </p>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-10">
-      {NN_BRAIN_MAPPINGS.map((mapping) => (
-        <BrainFlipCard mapping={mapping} />
-      ))}
-    </div>
-
-    <p class="text-xs text-zinc-400 mb-10">
-      Analogies inspired by public lecture framing. None of these pairings claim to describe how the brain actually works.
-    </p>
-
-    <div class="p-6 bg-white border border-zinc-200 rounded-3xl shadow-sm">
-      <div class="font-medium mb-2 text-zinc-900">Go deeper</div>
-      <p class="text-sm text-zinc-600 mb-4">
-        The <a href="/concepts" class="underline hover:text-zinc-900">concepts index</a> links each
-        mapping to working demos and reference pages in this repo. The
-        <a href="/reflect-and-attempt-quizz.html" class="underline hover:text-zinc-900">Reflect and Attempt Quizz</a>
-        tests what you picked up.
-      </p>
-      <div class="flex flex-wrap gap-3">
-        <a
-          href="/concepts"
-          class="inline-flex items-center gap-x-2 px-4 py-2 bg-white border border-zinc-300 text-zinc-800 hover:bg-zinc-100 hover:border-zinc-400 rounded-2xl text-sm font-medium"
-        >
-          All concepts <i class="fa-solid fa-arrow-right"></i>
-        </a>
-        <a
-          href="/reflect-and-attempt-quizz.html"
-          class="inline-flex items-center gap-x-2 px-4 py-2 bg-white border border-zinc-300 text-zinc-800 hover:bg-zinc-100 hover:border-zinc-400 rounded-2xl text-sm font-medium"
-        >
-          Open the tester <i class="fa-solid fa-arrow-right"></i>
-        </a>
-      </div>
-    </div>
-  </div>
-</DocsLayout>
+  const root = document.getElementById('workshop');
+  if (root) boot(root);
+</script>

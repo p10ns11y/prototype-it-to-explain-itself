@@ -17,6 +17,7 @@ const description = frontmatter?.description ?? propDescription;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>{title} • Prototype It To Explain Itself</title>
     {description && <meta name="description" content={description} />}
     <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
@@ -37,8 +38,9 @@ const description = frontmatter?.description ?? propDescription;
         </div>
 
         <nav class="flex items-center gap-x-4 text-sm">
-          <a href="/reflect-and-attempt-quizz.html" class="text-zinc-600 hover:text-zinc-900 transition-colors">Tester</a>
-          <a href="/concepts" class="text-zinc-600 hover:text-zinc-900 transition-colors">Concepts</a>
+          <a href="/" class="text-zinc-600 hover:text-zinc-900 transition-colors">Workshop</a>
+          <a href="/concepts" class="text-zinc-600 hover:text-zinc-900 transition-colors">Reading</a>
+          <a href="/reflect-and-attempt-quizz.html" class="text-zinc-600 hover:text-zinc-900 transition-colors">Recall</a>
           <a href="https://github.com/p10ns11y/prototype-it-to-explain-itself" target="_blank" class="text-zinc-600 hover:text-zinc-900 transition-colors flex items-center gap-x-1">
             <i class="fa-brands fa-github"></i>
             <span>GitHub</span>

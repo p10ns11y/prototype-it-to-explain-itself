@@ -1,0 +1,36 @@
+---
+import '@fontsource/spectral/latin-500.css';
+import '@fontsource/spectral/latin-600.css';
+import '@fontsource/outfit/latin-400.css';
+import '@fontsource/outfit/latin-500.css';
+import '../styles/global.css';
+import '../styles/lab.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'The workshop',
+  description = 'Four small machines that teach sampling, diffusion, splats, and the agent loop by letting you run them.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f3ead7" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="workshop-body">
+    <slot />
+    <noscript>
+      <p class="noscript">This workshop runs in the browser. Turn scripts on to play the four machines.</p>
+    </noscript>
+  </body>
+</html>

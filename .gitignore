@@ -153,6 +153,7 @@ cython_debug/
 
 # Local agent context (not for the repo)
 CURSOR_CONTEXT.md
+.audit/
 
 # macOS
 .DS_Store
